@@ -21,7 +21,9 @@ export default [
                 avoidEscape: true,
                 allowTemplateLiterals: true
             }],
-            'eol-last': ['error', 'always']
+            'eol-last': ['error', 'always'],
+            'no-var': ['error'],
+            'prefer-const': ['error']
         }
     }
 ];
