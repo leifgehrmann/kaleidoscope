@@ -74,7 +74,7 @@ async function main() {
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
   // Bind texture to the "data" argument to the fragment shader
-  const param = gl.getActiveUniform(program,0); // data bind point
+  // const param = gl.getActiveUniform(program,0); // data bind point
   gl.uniform1i(gl.getUniformLocation(program,'data'),0);
   gl.activeTexture(gl.TEXTURE0);
   gl.bindTexture(gl.TEXTURE_2D,texture);
