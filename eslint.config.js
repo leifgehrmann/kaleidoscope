@@ -16,6 +16,7 @@ export default [
     },
     {
         rules: {
+            // Airbnb-like rules
             semi: ['error', 'always'],
             quotes: ['error', 'single', {
                 avoidEscape: true,
@@ -23,7 +24,10 @@ export default [
             }],
             'eol-last': ['error', 'always'],
             'no-var': ['error'],
-            'prefer-const': ['error']
+            'prefer-const': ['error'],
+
+            // Disabled this rule, because Kaleidoscope is a false positive
+            'vue/multi-word-component-names': ['off']
         }
     }
 ];
