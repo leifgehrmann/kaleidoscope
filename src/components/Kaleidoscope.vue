@@ -36,6 +36,22 @@ async function main() {
       uniform vec2 dataDimensions;
       uniform vec2 canvasDimensions;
 
+      vec2 square(vec2 u, float kLength) {
+        float kOffset = (1.0/kLength - 1.0) / (1.0/kLength * 2.0);
+        vec2 k = vec2(0.0, 0.0);
+        if (mod(-kOffset + u.x, kLength * 2.0) > kLength) {
+          k.x = 1.0 - mod(-kOffset + u.x, kLength) / kLength;
+        } else {
+          k.x = mod(-kOffset + u.x, kLength) / kLength;
+        }
+        if (mod(-kOffset + u.y, kLength * 2.0) > kLength) {
+          k.y = 1.0 - mod(-kOffset + u.y, kLength) / kLength;
+        } else {
+          k.y = mod(-kOffset + u.y, kLength) / kLength;
+        }
+        return k;
+      }
+
       void main() {
           // The interesting things to change!
           float kLength = 1.0 / 10.0; // Effectively, how often should the image reflect 1 is one reflection (when viewed in square mode)
@@ -50,20 +66,11 @@ async function main() {
 
           // Position in kaleidoscope space
           // In opengl, y-coordinate is flipped
-          vec2 k = vec2(fragCoord.x,1.0-fragCoord.y);
+          vec2 u = vec2(fragCoord.x,1.0-fragCoord.y);
 
           // Square kaleidoscope mode
-          float kOffset = (1.0/kLength - 1.0) / (1.0/kLength * 2.0);
-          if (mod(-kOffset + k.x, kLength * 2.0) > kLength) {
-            k.x = 1.0 - mod(-kOffset + k.x, kLength) / kLength;
-          } else {
-            k.x = mod(-kOffset + k.x, kLength) / kLength;
-          }
-          if (mod(-kOffset + k.y, kLength * 2.0) > kLength) {
-            k.y = 1.0 - mod(-kOffset + k.y, kLength) / kLength;
-          } else {
-            k.y = mod(-kOffset + k.y, kLength) / kLength;
-          }
+          vec2 k = square(u, kLength);
+
 
           // Now map the k value to coordinates on the image
           // 0,0 will be the centre of the image
