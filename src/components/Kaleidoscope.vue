@@ -29,23 +29,23 @@ async function main() {
   // Fragment shader: sample video texture, change colors
   const fshader = gl.createShader(gl.FRAGMENT_SHADER)!;
   gl.shaderSource(fshader,`
+      precision mediump float;
+
       uniform sampler2D data;
       void main() {
-
+          float mapx;
+          float mapy;
           if (mod(gl_FragCoord.x, 200.0) > 100.0) {
-            if (mod(gl_FragCoord.y, 200.0) > 100.0) {
-            gl_FragColor=texture2D(data,vec2(mod(-gl_FragCoord.x, 100.0), mod(gl_FragCoord.y, 100.0))/vec2(512,512)).xyzw;
+            mapx = mod(gl_FragCoord.x, 100.0);
           } else {
-            gl_FragColor=texture2D(data,vec2(mod(gl_FragCoord.x, 100.0), mod(-gl_FragCoord.y, 100.0))/vec2(512,512)).xyzw;
+            mapx = 100.0 - mod(gl_FragCoord.x, 100.0);
           }
+          if (mod(gl_FragCoord.y, 200.0) > 100.0) {
+            mapy = mod(gl_FragCoord.y, 100.0);
           } else {
-            if (mod(gl_FragCoord.y, 200.0) > 100.0) {
-            gl_FragColor=texture2D(data,vec2(mod(-gl_FragCoord.x, 100.0), mod(gl_FragCoord.y, 100.0))/vec2(512,512)).xyzw;
-          } else {
-            gl_FragColor=texture2D(data,vec2(mod(gl_FragCoord.x, 100.0), mod(-gl_FragCoord.y, 100.0))/vec2(512,512)).xyzw;
+            mapy = 100.0 - mod(gl_FragCoord.y, 100.0);
           }
-          }
-
+          gl_FragColor=texture2D(data,vec2(mapx, mapy)/vec2(512,512)).xyzw;
       }`);
   gl.compileShader(fshader);
 
