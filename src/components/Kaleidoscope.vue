@@ -11,10 +11,11 @@ async function main() {
   camera.srcObject = stream;
   camera.play();
 
-  // 512×512 Canvas with WebGL context
+  // Canvas with WebGL context
   const canvas = document.getElementById('maincanvas') as HTMLCanvasElement;
+  const canvasSize = 1024;
   const gl = canvas.getContext('webgl')!;
-  canvas.width = canvas.height = 512;
+  canvas.width = canvas.height = canvasSize;
   gl.viewport(0, 0, canvas.width, canvas.height);
 
   // Vertex shader: Identity map
@@ -32,22 +33,50 @@ async function main() {
       precision mediump float;
 
       uniform sampler2D data;
+      uniform vec2 dataDimensions;
+      uniform vec2 canvasDimensions;
+
       void main() {
-          float size = 100.0;
-          float scale = 3.0;
-          float mapx;
-          float mapy;
-          if (mod(gl_FragCoord.x*scale, size*2.0) > size) {
-            mapx = mod(gl_FragCoord.x*scale, size);
+          // The interesting things to change!
+          float kLength = 0.15; // Effectively, how often should the image reflect 1 is one reflection (when viewed in square mode)
+          float dataScopePercentage = 0.5; // Effectively how narrow the kaleidoscope should be, as a percentage of the camera size
+
+          vec2 centerOffset = vec2(0.0);
+
+          vec2 fragCoord = vec2(
+            gl_FragCoord.x / canvasDimensions.x,
+            gl_FragCoord.y / canvasDimensions.y
+          );
+
+          // Position in kaleidoscope space
+          vec2 k = vec2(abs(fragCoord.x - 0.5) * 2.0,abs(fragCoord.y - 0.5) * 2.0);
+
+          // Square kaleidoscope mode
+          if (mod(k.x, kLength * 2.0) > kLength) {
+            k.x = 1.0 - mod(k.x, kLength) / kLength;
           } else {
-            mapx = size - mod(gl_FragCoord.x*scale, size);
+            k.x = mod(k.x, kLength) / kLength;
           }
-          if (mod(gl_FragCoord.y*scale, size*2.0) > size) {
-            mapy = mod(gl_FragCoord.y*scale, size);
+          if (mod(k.y, kLength * 2.0) > kLength) {
+            k.y = 1.0 - mod(k.y, kLength) / kLength;
           } else {
-            mapy = size - mod(gl_FragCoord.y*scale, size);
+            k.y = mod(k.y, kLength) / kLength;
           }
-          gl_FragColor=texture2D(data,vec2(mapx, mapy)/vec2(512,512)).xyzw;
+
+          // Now map the k value to coordinates on the image
+          // 0,0 will be the centre of the image
+          // 1,1 will be the top right of the image (not the bottom left– It's easier to orientate if things are up-right)
+          float dataMinDimension = min(dataDimensions.x, dataDimensions.y);
+          float dataWindowSize = dataMinDimension / 2.0 * dataScopePercentage;
+          vec2 i = vec2(0.0,0.0);
+          // Todo: Account for front-facing cameras, and flip the x-coordinate, because people understand mirrors more easily.
+          i.x = dataDimensions.x / 2.0 + k.x * dataWindowSize;
+          i.y = dataDimensions.y / 2.0 + k.y * dataWindowSize;
+
+          gl_FragColor=texture2D(data,vec2(i.x, i.y)/vec2(dataDimensions.x,dataDimensions.y)).xyzw;
+
+          // For debugging the kaleidoscope value
+          // gl_FragColor=vec4(k.x, k.y, 0.0, 1.0);
       }`);
   gl.compileShader(fshader);
 
@@ -74,14 +103,20 @@ async function main() {
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
   // Bind texture to the "data" argument to the fragment shader
-  // const param = gl.getActiveUniform(program,0); // data bind point
   gl.uniform1i(gl.getUniformLocation(program,'data'),0);
   gl.activeTexture(gl.TEXTURE0);
   gl.bindTexture(gl.TEXTURE_2D,texture);
 
+  // Bind camera dimensions to the fragment shader
+  const dataDimensionsBind = gl.getUniformLocation(program, 'dataDimensions');
+  const canvasDimensionsBind = gl.getUniformLocation(program, 'canvasDimensions');
+
   // Repeatedly pull camera data and render
   function animate(){
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, camera);
+    gl.uniform2f(dataDimensionsBind, camera.videoWidth, camera.videoHeight);
+    gl.uniform2f(dataDimensionsBind, 640, 420);
+    gl.uniform2f(canvasDimensionsBind, canvasSize, canvasSize);
     gl.drawArrays(gl.TRIANGLES, 0, 6);
     requestAnimationFrame(animate);
   }
