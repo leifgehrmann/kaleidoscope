@@ -38,7 +38,7 @@ async function main() {
 
       void main() {
           // The interesting things to change!
-          float kLength = 0.15; // Effectively, how often should the image reflect 1 is one reflection (when viewed in square mode)
+          float kLength = 1.0 / 10.0; // Effectively, how often should the image reflect 1 is one reflection (when viewed in square mode)
           float dataScopePercentage = 0.5; // Effectively how narrow the kaleidoscope should be, as a percentage of the camera size
 
           vec2 centerOffset = vec2(0.0);
@@ -49,18 +49,20 @@ async function main() {
           );
 
           // Position in kaleidoscope space
-          vec2 k = vec2(abs(fragCoord.x - 0.5) * 2.0,abs(fragCoord.y - 0.5) * 2.0);
+          // In opengl, y-coordinate is flipped
+          vec2 k = vec2(fragCoord.x,1.0-fragCoord.y);
 
           // Square kaleidoscope mode
-          if (mod(k.x, kLength * 2.0) > kLength) {
-            k.x = 1.0 - mod(k.x, kLength) / kLength;
+          float kOffset = (1.0/kLength - 1.0) / (1.0/kLength * 2.0);
+          if (mod(-kOffset + k.x, kLength * 2.0) > kLength) {
+            k.x = 1.0 - mod(-kOffset + k.x, kLength) / kLength;
           } else {
-            k.x = mod(k.x, kLength) / kLength;
+            k.x = mod(-kOffset + k.x, kLength) / kLength;
           }
-          if (mod(k.y, kLength * 2.0) > kLength) {
-            k.y = 1.0 - mod(k.y, kLength) / kLength;
+          if (mod(-kOffset + k.y, kLength * 2.0) > kLength) {
+            k.y = 1.0 - mod(-kOffset + k.y, kLength) / kLength;
           } else {
-            k.y = mod(k.y, kLength) / kLength;
+            k.y = mod(-kOffset + k.y, kLength) / kLength;
           }
 
           // Now map the k value to coordinates on the image
@@ -70,8 +72,8 @@ async function main() {
           float dataWindowSize = dataMinDimension / 2.0 * dataScopePercentage;
           vec2 i = vec2(0.0,0.0);
           // Todo: Account for front-facing cameras, and flip the x-coordinate, because people understand mirrors more easily.
-          i.x = dataDimensions.x / 2.0 + k.x * dataWindowSize;
-          i.y = dataDimensions.y / 2.0 + k.y * dataWindowSize;
+          i.x = dataDimensions.x / 2.0 + (-dataWindowSize / 2.0 + k.x * dataWindowSize);
+          i.y = dataDimensions.y / 2.0 - (-dataWindowSize / 2.0 + k.y * dataWindowSize); // y-axis is flipped because of openGL coordinate space
 
           gl_FragColor=texture2D(data,vec2(i.x, i.y)/vec2(dataDimensions.x,dataDimensions.y)).xyzw;
 
