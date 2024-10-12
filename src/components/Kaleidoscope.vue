@@ -33,17 +33,19 @@ async function main() {
 
       uniform sampler2D data;
       void main() {
+          float size = 100.0;
+          float scale = 3.0;
           float mapx;
           float mapy;
-          if (mod(gl_FragCoord.x, 200.0) > 100.0) {
-            mapx = mod(gl_FragCoord.x, 100.0);
+          if (mod(gl_FragCoord.x*scale, size*2.0) > size) {
+            mapx = mod(gl_FragCoord.x*scale, size);
           } else {
-            mapx = 100.0 - mod(gl_FragCoord.x, 100.0);
+            mapx = size - mod(gl_FragCoord.x*scale, size);
           }
-          if (mod(gl_FragCoord.y, 200.0) > 100.0) {
-            mapy = mod(gl_FragCoord.y, 100.0);
+          if (mod(gl_FragCoord.y*scale, size*2.0) > size) {
+            mapy = mod(gl_FragCoord.y*scale, size);
           } else {
-            mapy = 100.0 - mod(gl_FragCoord.y, 100.0);
+            mapy = size - mod(gl_FragCoord.y*scale, size);
           }
           gl_FragColor=texture2D(data,vec2(mapx, mapy)/vec2(512,512)).xyzw;
       }`);
