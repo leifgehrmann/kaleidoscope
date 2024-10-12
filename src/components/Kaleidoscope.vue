@@ -94,7 +94,7 @@ onMounted(() => {
 <template>
   <canvas
     id="maincanvas"
-    style="width:512px;height:512px;"
+    style="width:100dvw;height:100dvh;object-fit:cover"
   />
   <video
     id="camera"
