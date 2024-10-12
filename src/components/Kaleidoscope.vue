@@ -7,7 +7,7 @@ async function main() {
   const camera = document.getElementById('camera') as HTMLVideoElement;
 
   // Ask user permission to record their camera
-  const stream = await navigator.mediaDevices.getUserMedia({video: true, audio: false});
+  const stream = await navigator.mediaDevices.getUserMedia({video: { facingMode: 'environment' }, audio: false});
   camera.srcObject = stream;
   camera.play();
 
