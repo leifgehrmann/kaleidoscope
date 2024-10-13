@@ -84,9 +84,11 @@ async function main() {
       }
 
       vec2 equilateral(vec2 u, float kLength) {
+        u.x -= (1.0/kLength - 1.0) / (1.0/kLength * 2.0);
+        u.y -= (1.0/kLength - (sqrt(3.0) / 2.0)) / (1.0/kLength * 2.0) / (sqrt(3.0) / 2.0);
+
         u /= kLength;
 
-        float kOffset = (1.0/kLength - 1.0) / (1.0/kLength * 2.0);
         vec2 k = vec2(0.0, 0.0);
 
         vec2 hexIndex = square_float_to_axial_hex_grid(u);
