@@ -36,6 +36,37 @@ async function main() {
       uniform vec2 dataDimensions;
       uniform vec2 canvasDimensions;
 
+      float round(float v) {
+          return floor(v + 0.5);
+      }
+
+      // https://observablehq.com/@jrus/hexround
+      vec2 axial_round(vec2 pos) {
+        float xGrid = round(pos.x);
+        float yGrid = round(pos.y);
+        pos.x -= xGrid; // remainder
+        pos.y -= yGrid; // remainder
+        float dx = round(pos.x + 0.5*pos.y) * (pos.x*pos.x >= pos.y*pos.y ? 1.0 : 0.0);
+        float dy = round(pos.y + 0.5*pos.x) * (pos.x*pos.x < pos.y*pos.y ? 1.0 : 0.0);
+        return vec2(xGrid + dx, yGrid + dy);
+      }
+
+      vec2 square_float_to_axial_hex_grid(vec2 pos) {
+        float SQRT3 = sqrt(3.0);
+        float ratio = 2.0 / 3.0;
+        pos.y = ratio * 0.5 * (SQRT3*pos.y - pos.x);
+        pos.x *= ratio;
+        return axial_round(pos);
+      }
+
+      vec2 hexToCentroid(vec2 hex) {
+        vec2 pos = vec2(0.0,0.0);
+        float size = 2.0 / 3.0;
+        pos.x = hex.x / size;
+        pos.y = hex.y * 2.0 / sqrt(3.0) / size + hex.x / sqrt(3.0) / size;
+        return pos;
+      }
+
       vec2 square(vec2 u, float kLength) {
         float kOffset = (1.0/kLength - 1.0) / (1.0/kLength * 2.0);
         vec2 k = vec2(0.0, 0.0);
@@ -49,6 +80,34 @@ async function main() {
         } else {
           k.y = mod(-kOffset + u.y, kLength) / kLength;
         }
+        return k;
+      }
+
+      vec2 equilateral(vec2 u, float kLength) {
+        u /= kLength;
+
+        float kOffset = (1.0/kLength - 1.0) / (1.0/kLength * 2.0);
+        vec2 k = vec2(0.0, 0.0);
+
+        vec2 hexIndex = square_float_to_axial_hex_grid(u);
+        vec2 hexCentroid = hexToCentroid(hexIndex);
+        // For debugging
+        // k = vec2(distance(hexToCentroid(hexIndex), u));
+        // k = hexIndex / 5.0;
+
+        float distance = distance(hexCentroid, u);
+        float deg180 = 3.1415926536;
+        float deg60 = deg180 / 3.0;
+        float theta = atan(u.x- hexCentroid.x, u.y- hexCentroid.y) + deg180 + deg60 / 2.0;
+        if (mod(theta, deg60 * 2.0) > deg60) {
+          theta = mod(theta, deg60);
+        } else {
+          theta = deg60 - mod(theta, deg60);
+        }
+
+        k.x = cos(theta) * distance;
+        k.y = sin(theta) * distance;
+
         return k;
       }
 
@@ -69,8 +128,10 @@ async function main() {
           vec2 u = vec2(fragCoord.x,1.0-fragCoord.y);
 
           // Square kaleidoscope mode
-          vec2 k = square(u, kLength);
+          // vec2 k = square(u, kLength);
 
+          // Equilateral triangle mode
+          vec2 k = equilateral(u, kLength);
 
           // Now map the k value to coordinates on the image
           // 0,0 will be the centre of the image
