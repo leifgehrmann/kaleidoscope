@@ -51,19 +51,29 @@ async function main() {
         return vec2(xGrid + dx, yGrid + dy);
       }
 
-      vec2 square_float_to_axial_hex_grid(vec2 pos) {
+      vec2 square_float_to_axial_hex_grid(vec2 pos, bool pointyTop) {
         float SQRT3 = sqrt(3.0);
         float ratio = 2.0 / 3.0;
-        pos.y = ratio * 0.5 * (SQRT3*pos.y - pos.x);
-        pos.x *= ratio;
+        if (pointyTop) {
+          pos.x = ratio * 0.5 * (SQRT3*pos.x - pos.y);
+          pos.y *= ratio;
+        } else {
+          pos.y = ratio * 0.5 * (SQRT3*pos.y - pos.x);
+          pos.x *= ratio;
+        }
         return axial_round(pos);
       }
 
-      vec2 hexToCentroid(vec2 hex) {
+      vec2 hexToCentroid(vec2 hex, bool pointyTop) {
         vec2 pos = vec2(0.0,0.0);
         float size = 2.0 / 3.0;
-        pos.x = hex.x / size;
-        pos.y = hex.y * 2.0 / sqrt(3.0) / size + hex.x / sqrt(3.0) / size;
+        if (pointyTop) {
+          pos.y = hex.y / size;
+          pos.x = hex.x * 2.0 / sqrt(3.0) / size + hex.y / sqrt(3.0) / size;
+        } else {
+          pos.x = hex.x / size;
+          pos.y = hex.y * 2.0 / sqrt(3.0) / size + hex.x / sqrt(3.0) / size;
+        }
         return pos;
       }
 
@@ -91,10 +101,10 @@ async function main() {
 
         vec2 k = vec2(0.0, 0.0);
 
-        vec2 hexIndex = square_float_to_axial_hex_grid(u);
-        vec2 hexCentroid = hexToCentroid(hexIndex);
+        vec2 hexIndex = square_float_to_axial_hex_grid(u, false);
+        vec2 hexCentroid = hexToCentroid(hexIndex, false);
         // For debugging
-        // k = vec2(distance(hexToCentroid(hexIndex), u));
+        // k = vec2(distance(hexToCentroid(hexIndex, false), u));
         // k = hexIndex / 5.0;
 
         float distance = distance(hexCentroid, u);
@@ -105,6 +115,39 @@ async function main() {
           theta = mod(theta, deg60);
         } else {
           theta = deg60 - mod(theta, deg60);
+        }
+
+        k.x = cos(theta) * distance;
+        k.y = sin(theta) * distance;
+
+        return k;
+      }
+
+      vec2 scalene(vec2 u, float kLength) {
+        // u.x -= (1.0/kLength - 1.0) / (1.0/kLength * 2.0);
+        // u.y -= (1.0/kLength - (sqrt(3.0) / 2.0)) / (1.0/kLength * 2.0) / (sqrt(3.0) / 2.0);
+
+        u.x *= sqrt(3.0) / 2.0;
+        u.y *= sqrt(3.0) / 2.0;
+
+        u /= kLength;
+
+        vec2 k = vec2(0.0, 0.0);
+
+        vec2 hexIndex = square_float_to_axial_hex_grid(u, true);
+        vec2 hexCentroid = hexToCentroid(hexIndex, true);
+        // For debugging
+        // k = vec2(distance(hexToCentroid(hexIndex, true), u));
+        // k = hexIndex / 5.0;
+
+        float distance = distance(hexCentroid, u);
+        float deg180 = 3.1415926536;
+        float deg30 = deg180 / 6.0;
+        float theta = atan(u.x- hexCentroid.x, u.y- hexCentroid.y) + deg180;
+        if (mod(theta, deg30 * 2.0) > deg30) {
+          theta = mod(theta, deg30);
+        } else {
+          theta = deg30 - mod(theta, deg30);
         }
 
         k.x = cos(theta) * distance;
@@ -133,7 +176,13 @@ async function main() {
           // vec2 k = square(u, kLength);
 
           // Equilateral triangle mode
-          vec2 k = equilateral(u, kLength);
+          // vec2 k = equilateral(u, kLength);
+
+          // Scalene triangle mode
+          vec2 k = scalene(u, kLength);
+
+          // Isosceles triangle mode
+          // vec2 k = isosceles(u, kLength);
 
           // Now map the k value to coordinates on the image
           // 0,0 will be the centre of the image
