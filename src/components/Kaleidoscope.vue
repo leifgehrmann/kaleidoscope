@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
+
+const facingMode = ref('unknown');
 
 async function main() {
   // Capture webcam input using invisible `video` element
@@ -7,9 +9,31 @@ async function main() {
   const camera = document.getElementById('camera') as HTMLVideoElement;
 
   // Ask user permission to record their camera
-  const stream = await navigator.mediaDevices.getUserMedia({video: { facingMode: 'environment' }, audio: false});
-  camera.srcObject = stream;
-  camera.play();
+  let stream: MediaStream | null = null;
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({video: { facingMode: { exact: 'environment'} }, audio: false});
+    facingMode.value = stream.getVideoTracks()[0]?.getSettings().facingMode ?? 'undefined';
+  } catch (e) {
+    console.log('Failed to get environment camera. Trying any camera, under the assumption it is a user-facing camera', e);
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({video: true, audio: false});
+      facingMode.value = 'fallback: ' + (stream.getVideoTracks()[0]?.getSettings().facingMode ?? 'undefined');
+    } catch (e2) {
+      if ((e2 as Error).name === 'ConstraintNotSatisfiedError') {
+        console.log('Device has no camera', e2);
+      } else if ((e2 as Error).name === 'PermissionDeniedError') {
+        console.log('Permissions not accepted', e2);
+      } else {
+        console.log('Other error', e2);
+      }
+    }
+  }
+
+  if (stream !== null) {
+    camera.srcObject = stream;
+    camera.play();
+    console.log('facingMode:', facingMode);
+  }
 
   // Canvas with WebGL context
   const canvas = document.getElementById('maincanvas') as HTMLCanvasElement;
@@ -262,6 +286,9 @@ onMounted(() => {
     playsinline
     crossorigin="anonymous"
   />
+  <div style="position: absolute; bottom: 0;width: 100%;display: flex;justify-content: center;">
+    <div style="margin: auto 0;margin-bottom:1rem; margin-left:1rem; margin-right: 1rem;background: rgba(38, 38, 38, 0.7);padding: 10px 20px;backdrop-filter: blur(12px);border-radius: 10000px;">{{facingMode}}</div>
+  </div>
 </template>
 
 <style scoped>
