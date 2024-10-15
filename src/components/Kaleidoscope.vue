@@ -182,8 +182,8 @@ async function main() {
 
       void main() {
           // The interesting things to change!
-          float kLength = 1.0 / 10.0; // Effectively, how often should the image reflect 1 is one reflection (when viewed in square mode)
-          float dataScopePercentage = 0.5; // Effectively how narrow the kaleidoscope should be, as a percentage of the camera size
+          float kLength = 1.0 / 3.0; // Effectively, how often should the image reflect 1 is one reflection (when viewed in square mode)
+          float dataScopePercentage = 1.0; // Effectively how narrow the kaleidoscope should be, as a percentage of the camera size
 
           vec2 centerOffset = vec2(0.0);
 
@@ -200,10 +200,10 @@ async function main() {
           // vec2 k = square(u, kLength);
 
           // Equilateral triangle mode
-          // vec2 k = equilateral(u, kLength);
+          vec2 k = equilateral(u, kLength);
 
           // Scalene triangle mode
-          vec2 k = scalene(u, kLength);
+          // vec2 k = scalene(u, kLength);
 
           // Isosceles triangle mode
           // vec2 k = isosceles(u, kLength);
