@@ -12,12 +12,12 @@ async function main() {
   let stream: MediaStream | null = null;
   try {
     stream = await navigator.mediaDevices.getUserMedia({video: { facingMode: { exact: 'environment'} }, audio: false});
-    facingMode.value = stream.getVideoTracks()[0]?.getSettings().facingMode ?? 'undefined';
+    facingMode.value = stream.getVideoTracks()[0]?.getSettings().facingMode ?? 'user';
   } catch (e) {
     console.log('Failed to get environment camera. Trying any camera, under the assumption it is a user-facing camera', e);
     try {
       stream = await navigator.mediaDevices.getUserMedia({video: true, audio: false});
-      facingMode.value = 'fallback: ' + (stream.getVideoTracks()[0]?.getSettings().facingMode ?? 'undefined');
+      facingMode.value = stream.getVideoTracks()[0]?.getSettings().facingMode ?? 'user';
     } catch (e2) {
       if ((e2 as Error).name === 'ConstraintNotSatisfiedError') {
         console.log('Device has no camera', e2);
@@ -58,6 +58,7 @@ async function main() {
 
       uniform sampler2D data;
       uniform vec2 dataDimensions;
+      uniform int dataIsFacingUser;
       uniform vec2 canvasDimensions;
 
       float round(float v) {
@@ -214,9 +215,10 @@ async function main() {
           float dataMinDimension = min(dataDimensions.x, dataDimensions.y);
           float dataWindowSize = dataMinDimension / 2.0 * dataScopePercentage;
           vec2 i = vec2(0.0,0.0);
-          // Todo: Account for front-facing cameras, and flip the x-coordinate, because people understand mirrors more easily.
-          i.x = dataDimensions.x / 2.0 + (-dataWindowSize / 2.0 + k.x * dataWindowSize);
-          i.y = dataDimensions.y / 2.0 - (-dataWindowSize / 2.0 + k.y * dataWindowSize); // y-axis is flipped because of openGL coordinate space
+          // x-axis is flipped only when the camera is pointed to the user
+          i.x = dataDimensions.x / 2.0 + (-dataWindowSize / 2.0 + k.x * dataWindowSize) * (dataIsFacingUser == 1 ? -1.0 : 1.0);
+          // y-axis is flipped because of openGL coordinate space
+          i.y = dataDimensions.y / 2.0 - (-dataWindowSize / 2.0 + k.y * dataWindowSize);
 
           gl_FragColor=texture2D(data,vec2(i.x, i.y)/vec2(dataDimensions.x,dataDimensions.y)).xyzw;
 
@@ -254,6 +256,7 @@ async function main() {
 
   // Bind camera dimensions to the fragment shader
   const dataDimensionsBind = gl.getUniformLocation(program, 'dataDimensions');
+  const dataIsFacingUserBind = gl.getUniformLocation(program, 'dataIsFacingUser');
   const canvasDimensionsBind = gl.getUniformLocation(program, 'canvasDimensions');
 
   // Repeatedly pull camera data and render
@@ -261,6 +264,7 @@ async function main() {
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, camera);
     gl.uniform2f(dataDimensionsBind, camera.videoWidth, camera.videoHeight);
     gl.uniform2f(dataDimensionsBind, 640, 420);
+    gl.uniform1i(dataIsFacingUserBind, facingMode.value === 'user' ? 1 : 0);
     gl.uniform2f(canvasDimensionsBind, canvasSize, canvasSize);
     gl.drawArrays(gl.TRIANGLES, 0, 6);
     requestAnimationFrame(animate);
