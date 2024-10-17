@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 
+const props = defineProps<{
+  scopeShape: number // Todo replace with enum
+}>();
+
 const facingMode = ref('unknown');
 
 async function main() {
@@ -60,6 +64,7 @@ async function main() {
       uniform vec2 dataDimensions;
       uniform int dataIsFacingUser;
       uniform vec2 canvasDimensions;
+      uniform int scopeShape;
 
       float round(float v) {
           return floor(v + 0.5);
@@ -197,17 +202,16 @@ async function main() {
           // In opengl, y-coordinate is flipped
           vec2 u = vec2(fragCoord.x,1.0-fragCoord.y);
 
-          // Square kaleidoscope mode
-          // vec2 k = square(u, kLength);
-
-          // Equilateral triangle mode
-          vec2 k = equilateral(u, kLength);
-
-          // Scalene triangle mode
-          // vec2 k = scalene(u, kLength);
-
-          // Isosceles triangle mode
-          // vec2 k = isosceles(u, kLength);
+          vec2 k = vec2(0.0, 0.0);
+          if (scopeShape == 0) {
+            k = equilateral(u, kLength);
+          } else if (scopeShape == 1) {
+            // k = isosceles(u, kLength); // Not implemented yet
+          } else if (scopeShape == 2) {
+            k = scalene(u, kLength);
+          } else {
+            k = square(u, kLength);
+          }
 
           // Now map the k value to coordinates on the image
           // 0,0 will be the centre of the image
@@ -258,12 +262,14 @@ async function main() {
   const dataDimensionsBind = gl.getUniformLocation(program, 'dataDimensions');
   const dataIsFacingUserBind = gl.getUniformLocation(program, 'dataIsFacingUser');
   const canvasDimensionsBind = gl.getUniformLocation(program, 'canvasDimensions');
+  const scopeShapeBind = gl.getUniformLocation(program, 'scopeShape');
 
   // Repeatedly pull camera data and render
   function animate(){
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, camera);
     gl.uniform2f(dataDimensionsBind, camera.videoWidth, camera.videoHeight);
     gl.uniform1i(dataIsFacingUserBind, facingMode.value === 'user' ? 1 : 0);
+    gl.uniform1i(scopeShapeBind, props.scopeShape);
     gl.uniform2f(canvasDimensionsBind, canvasSize, canvasSize);
     gl.drawArrays(gl.TRIANGLES, 0, 6);
     requestAnimationFrame(animate);
@@ -289,9 +295,6 @@ onMounted(() => {
     playsinline
     crossorigin="anonymous"
   />
-  <div style="position: absolute; bottom: 0;width: 100%;display: flex;justify-content: center;">
-    <div style="margin: auto 0;margin-bottom:1rem; margin-left:1rem; margin-right: 1rem;background: rgba(38, 38, 38, 0.7);padding: 10px 20px;backdrop-filter: blur(12px);border-radius: 10000px;">{{facingMode}}</div>
-  </div>
 </template>
 
 <style scoped>
