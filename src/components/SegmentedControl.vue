@@ -189,9 +189,9 @@ onMounted(() => {
       class="
         p-1
         relative
-        bg-black
-        bg-opacity-30
-        backdrop-blur
+        bg-neutral-800
+        bg-opacity-70
+        backdrop-blur-xl
         rounded-xl
         text-sm
         overflow-hidden
