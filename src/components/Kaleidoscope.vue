@@ -186,7 +186,41 @@ async function main() {
         return k;
       }
 
-      vec2 scalene(vec2 u, float kLength) {
+      vec2 isosceles(vec2 u, float kLength, float kRot) {
+        // Center the triangle in a circle
+        u -= vec2(0.5, 0.5);
+
+        u = rotate2d(u,kRot);
+        u /= kLength;
+        u *= sqrt(2.0) / 2.0;
+
+        u += vec2(0.5, 0.5);
+        u -= 0.25;
+
+        vec2 k = vec2(0.0, 0.0);
+
+        vec2 squareCentroid = vec2(round(u.x), round(u.y));
+        // For debugging
+        // k = vec2(distance(squareCentroid, u));
+
+        float distance = distance(squareCentroid, u) * 2.0;
+        float deg180 = 3.1415926536;
+        float deg45 = deg180 / 4.0;
+        // Multiply by 0.99999, because atan2 fails on some corner cases :(
+        float theta = atan(u.x- squareCentroid.x, u.y- squareCentroid.y) * 0.999999;
+        if (mod(theta, deg45 * 2.0) > deg45) {
+          theta = deg45 - mod(theta, deg45);
+        } else {
+          theta = mod(theta, deg45);
+        }
+
+        k.x = cos(theta) * distance;
+        k.y = sin(theta) * distance;
+
+        return k;
+      }
+
+      vec2 scalene(vec2 u, float kLength, float kRot) {
         // u.x -= 0.5;
         // u.y += 0.5 * (sqrt(3.0)/2.0);
 
@@ -211,39 +245,6 @@ async function main() {
           theta = mod(theta, deg30);
         } else {
           theta = deg30 - mod(theta, deg30);
-        }
-
-        k.x = cos(theta) * distance;
-        k.y = sin(theta) * distance;
-
-        return k;
-      }
-
-      vec2 isosceles(vec2 u, float kLength) {
-        // Center the triangle in a circle
-        u.x *= sqrt(2.0);
-        u.y *= sqrt(2.0);
-        u += vec2((1.0-sqrt(2.0))/2.0, (1.0-sqrt(2.0))/2.0);
-        u.x *= 0.5;
-        u.y *= 0.5;
-
-        u /= kLength;
-
-        vec2 k = vec2(0.0, 0.0);
-
-        vec2 squareCentroid = vec2(round(u.x), round(u.y));
-        // For debugging
-        // k = vec2(distance(squareCentroid, u));
-
-        float distance = distance(squareCentroid, u) * 2.0;
-        float deg180 = 3.1415926536;
-        float deg45 = deg180 / 4.0;
-        // Multiply by 0.99999, because atan2 fails on some corner cases :(
-        float theta = atan(u.x- squareCentroid.x, u.y- squareCentroid.y) * 0.999999;
-        if (mod(theta, deg45 * 2.0) > deg45) {
-          theta = deg45 - mod(theta, deg45);
-        } else {
-          theta = mod(theta, deg45);
         }
 
         k.x = cos(theta) * distance;
@@ -279,9 +280,9 @@ async function main() {
             k = equilateral(k, scopeSize, scopeRotation);
             scopeDiameterRatio = sqrt(3.0) / 2.0;
           } else if (scopeShape == 1) {
-            k = isosceles(k, kLength);
+            k = isosceles(k, scopeSize, scopeRotation);
           } else if (scopeShape == 2) {
-            k = scalene(k, kLength);
+            k = scalene(k, scopeSize, scopeRotation);
           } else {
             k = square(k, scopeSize, scopeRotation);
             scopeDiameterRatio = sqrt(2.0);
