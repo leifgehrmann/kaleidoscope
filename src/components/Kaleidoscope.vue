@@ -179,9 +179,9 @@ async function main() {
         k.y = sin(theta) * distance;
 
         // We want the center of the equilateral triangle to be the center of the image.
-        k *= sqrt(3.0) / 2.0;
-        k.x += (((1.0 - sqrt(3.0) / 2.0)) / 2.0);
-        k.y += (0.25);
+        k *= cos(radians(30.0));
+        k.x += (((1.0 - sqrt(3.0) / 2.0)) / 2.00);
+        k.y += (0.254); // I don't know what number this actually is meant to be... But it works.
 
         return k;
       }
@@ -221,13 +221,15 @@ async function main() {
       }
 
       vec2 scalene(vec2 u, float kLength, float kRot) {
-        // u.x -= 0.5;
-        // u.y += 0.5 * (sqrt(3.0)/2.0);
+        u -= 0.5;
 
-        u.x *= sqrt(3.0) / 2.0;
-        u.y *= sqrt(3.0) / 2.0;
-
+        u = rotate2d(u,kRot + radians(60.0));
         u /= kLength;
+
+        u += 0.5;
+
+        u.x -= sin(radians(90.0)) * 0.50;
+        u.y -= cos(radians(90.0)) * 0.50;
 
         vec2 k = vec2(0.0, 0.0);
 
@@ -249,6 +251,11 @@ async function main() {
 
         k.x = cos(theta) * distance;
         k.y = sin(theta) * distance;
+
+        // We want the center of the triangle to be the center of the image.
+        k *= sqrt(3.0) / 2.0;
+        k.x += (((1.0 - sqrt(3.0) / 2.0)) / 2.0);
+        k.y += (0.25);
 
         return k;
       }
@@ -278,10 +285,11 @@ async function main() {
           float scopeDiameterRatio = sqrt(2.0);
           if (scopeShape == 0) {
             k = equilateral(k, scopeSize, scopeRotation);
-            scopeDiameterRatio = sqrt(3.0) / 2.0;
+            scopeDiameterRatio = 1.0;
           } else if (scopeShape == 1) {
             k = isosceles(k, scopeSize, scopeRotation);
           } else if (scopeShape == 2) {
+            scopeDiameterRatio = 1.0;
             k = scalene(k, scopeSize, scopeRotation);
           } else {
             k = square(k, scopeSize, scopeRotation);
