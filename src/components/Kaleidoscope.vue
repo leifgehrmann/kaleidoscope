@@ -6,6 +6,8 @@ const props = defineProps<{
 }>();
 
 const facingMode = ref('unknown');
+const scopeRotation = ref(0.0);
+const scopeSize = ref(0.5);
 
 async function main() {
   // Capture webcam input using invisible `video` element
@@ -65,9 +67,18 @@ async function main() {
       uniform int dataIsFacingUser;
       uniform vec2 canvasDimensions;
       uniform int scopeShape;
+      uniform float scopeRotation;
+      uniform float scopeSize;
 
       float round(float v) {
           return floor(v + 0.5);
+      }
+
+      vec2 rotate2d(vec2 u, float theta) {
+        return vec2(
+          cos(theta) * u.x - sin(theta) * u.y,
+          sin(theta) * u.x + cos(theta) * u.y
+        );
       }
 
       // https://observablehq.com/@jrus/hexround
@@ -107,27 +118,44 @@ async function main() {
         return pos;
       }
 
-      vec2 square(vec2 u, float kLength) {
-        float kOffset = (1.0/kLength - 1.0) / (1.0/kLength * 2.0);
+      vec2 square(vec2 u, float kLength, float kRot) {
+
+        u -= vec2(0.5, 0.5);
+        u = rotate2d(u,kRot);
+        u /= kLength;
+        u += vec2(0.5, 0.5);
+
+        // Center the square in a circle
+        u.x *= sqrt(2.0);
+        u.y *= sqrt(2.0);
+        u += vec2((1.0-sqrt(2.0))/2.0, (1.0-sqrt(2.0))/2.0);
+
+        float kOffset = (1.0/1.0 - 1.0) / (1.0/1.0 * 2.0);
         vec2 k = vec2(0.0, 0.0);
-        if (mod(-kOffset + u.x, kLength * 2.0) > kLength) {
-          k.x = 1.0 - mod(-kOffset + u.x, kLength) / kLength;
+        if (mod(-kOffset + u.x, 1.0 * 2.0) > 1.0) {
+          k.x = 1.0 - mod(-kOffset + u.x, 1.0) / 1.0;
         } else {
-          k.x = mod(-kOffset + u.x, kLength) / kLength;
+          k.x = mod(-kOffset + u.x, 1.0) / 1.0;
         }
-        if (mod(-kOffset + u.y, kLength * 2.0) > kLength) {
-          k.y = 1.0 - mod(-kOffset + u.y, kLength) / kLength;
+        if (mod(-kOffset + u.y, 1.0 * 2.0) > 1.0) {
+          k.y = 1.0 - mod(-kOffset + u.y, 1.0) / 1.0;
         } else {
-          k.y = mod(-kOffset + u.y, kLength) / kLength;
+          k.y = mod(-kOffset + u.y, 1.0) / 1.0;
         }
         return k;
       }
 
-      vec2 equilateral(vec2 u, float kLength) {
-        u.x -= (1.0/kLength - 1.0) / (1.0/kLength * 2.0);
-        u.y -= (1.0/kLength - (sqrt(3.0) / 2.0)) / (1.0/kLength * 2.0) / (sqrt(3.0) / 2.0);
+      vec2 equilateral(vec2 u, float kLength, float kRot) {
+        // Center the triangle in a circle
 
+        u -= vec2(0.5, 0.5);
+
+        u = rotate2d(u,kRot);
         u /= kLength;
+        u /= sqrt(3.0) / 2.0;
+
+        u += vec2(0.5, 0.5);
+        u.y -= (0.25) * sqrt(3.0) / 2.0;
 
         vec2 k = vec2(0.0, 0.0);
 
@@ -150,12 +178,17 @@ async function main() {
         k.x = cos(theta) * distance;
         k.y = sin(theta) * distance;
 
+        // We want the center of the equilateral triangle to be the center of the image.
+        k *= sqrt(3.0) / 2.0;
+        k.x += (((1.0 - sqrt(3.0) / 2.0)) / 2.0);
+        k.y += (0.25);
+
         return k;
       }
 
       vec2 scalene(vec2 u, float kLength) {
-        u.x -= 0.5;
-        u.y -= 0.5;
+        // u.x -= 0.5;
+        // u.y += 0.5 * (sqrt(3.0)/2.0);
 
         u.x *= sqrt(3.0) / 2.0;
         u.y *= sqrt(3.0) / 2.0;
@@ -170,7 +203,7 @@ async function main() {
         // k = vec2(distance(hexToCentroid(hexIndex, true), u));
         // k = hexIndex / 5.0;
 
-        float distance = distance(hexCentroid, u);
+        float distance = distance(hexCentroid, u) * 2.0 / sqrt(3.0);
         float deg180 = 3.1415926536;
         float deg30 = deg180 / 6.0;
         float theta = atan(u.x- hexCentroid.x, u.y- hexCentroid.y) + deg180;
@@ -186,9 +219,42 @@ async function main() {
         return k;
       }
 
+      vec2 isosceles(vec2 u, float kLength) {
+        // Center the triangle in a circle
+        u.x *= sqrt(2.0);
+        u.y *= sqrt(2.0);
+        u += vec2((1.0-sqrt(2.0))/2.0, (1.0-sqrt(2.0))/2.0);
+        u.x *= 0.5;
+        u.y *= 0.5;
+
+        u /= kLength;
+
+        vec2 k = vec2(0.0, 0.0);
+
+        vec2 squareCentroid = vec2(round(u.x), round(u.y));
+        // For debugging
+        // k = vec2(distance(squareCentroid, u));
+
+        float distance = distance(squareCentroid, u) * 2.0;
+        float deg180 = 3.1415926536;
+        float deg45 = deg180 / 4.0;
+        // Multiply by 0.99999, because atan2 fails on some corner cases :(
+        float theta = atan(u.x- squareCentroid.x, u.y- squareCentroid.y) * 0.999999;
+        if (mod(theta, deg45 * 2.0) > deg45) {
+          theta = deg45 - mod(theta, deg45);
+        } else {
+          theta = mod(theta, deg45);
+        }
+
+        k.x = cos(theta) * distance;
+        k.y = sin(theta) * distance;
+
+        return k;
+      }
+
       void main() {
           // The interesting things to change!
-          float kLength = 1.0 / 3.0; // Effectively, how often should the image reflect 1 is one reflection (when viewed in square mode)
+          float kLength = scopeSize; // Effectively, how often should the image reflect 1 is one reflection (when viewed in square mode)
           float dataScopePercentage = 1.0; // Effectively how narrow the kaleidoscope should be, as a percentage of the camera size
 
           vec2 centerOffset = vec2(0.0);
@@ -201,28 +267,39 @@ async function main() {
           // Position in kaleidoscope space
           // In opengl, y-coordinate is flipped
           vec2 u = vec2(fragCoord.x,1.0-fragCoord.y);
+          // u -= vec2(0.5, 0.5);
+          vec2 k = u;
+          // k = rotate2d(k, scopeRotation);
+          // k += vec2(0.5, 0.5);
 
-          vec2 k = vec2(0.0, 0.0);
+
+          vec2 scopeOrigin = vec2(0.0, 0.0);
+          float scopeDiameterRatio = sqrt(2.0);
           if (scopeShape == 0) {
-            k = equilateral(u, kLength);
+            k = equilateral(k, scopeSize, scopeRotation);
+            scopeDiameterRatio = sqrt(3.0) / 2.0;
           } else if (scopeShape == 1) {
-            // k = isosceles(u, kLength); // Not implemented yet
+            k = isosceles(k, kLength);
           } else if (scopeShape == 2) {
-            k = scalene(u, kLength);
+            k = scalene(k, kLength);
           } else {
-            k = square(u, kLength);
+            k = square(k, scopeSize, scopeRotation);
+            scopeDiameterRatio = sqrt(2.0);
           }
 
           // Now map the k value to coordinates on the image
           // 0,0 will be the centre of the image
           // 1,1 will be the top right of the image (not the bottom left– It's easier to orientate if things are up-right)
-          float dataMinDimension = min(dataDimensions.x, dataDimensions.y);
-          float dataWindowSize = dataMinDimension / 2.0 * dataScopePercentage;
+          float dataMinDimension = min(dataDimensions.x, dataDimensions.y) / scopeDiameterRatio;
+          float dataWindowSize = dataMinDimension * dataScopePercentage;
           vec2 i = vec2(0.0,0.0);
           // x-axis is flipped only when the camera is pointed to the user
-          i.x = dataDimensions.x / 2.0 + (-dataWindowSize / 2.0 + k.x * dataWindowSize) * (dataIsFacingUser == 1 ? -1.0 : 1.0);
+          i.x = (-dataWindowSize / 2.0 + k.x * dataWindowSize) * (dataIsFacingUser == 1 ? -1.0 : 1.0);
           // y-axis is flipped because of openGL coordinate space
-          i.y = dataDimensions.y / 2.0 - (-dataWindowSize / 2.0 + k.y * dataWindowSize);
+          i.y = - (-dataWindowSize / 2.0 + k.y * dataWindowSize);
+          i = rotate2d(i, -scopeRotation);
+          i.x += dataDimensions.x / 2.0;
+          i.y += dataDimensions.y / 2.0;
 
           gl_FragColor=texture2D(data,vec2(i.x, i.y)/vec2(dataDimensions.x,dataDimensions.y)).xyzw;
 
@@ -263,6 +340,8 @@ async function main() {
   const dataIsFacingUserBind = gl.getUniformLocation(program, 'dataIsFacingUser');
   const canvasDimensionsBind = gl.getUniformLocation(program, 'canvasDimensions');
   const scopeShapeBind = gl.getUniformLocation(program, 'scopeShape');
+  const scopeRotationBind = gl.getUniformLocation(program, 'scopeRotation');
+  const scopeSizeBind = gl.getUniformLocation(program, 'scopeSize');
 
   // Repeatedly pull camera data and render
   function animate(){
@@ -270,6 +349,8 @@ async function main() {
     gl.uniform2f(dataDimensionsBind, camera.videoWidth, camera.videoHeight);
     gl.uniform1i(dataIsFacingUserBind, facingMode.value === 'user' ? 1 : 0);
     gl.uniform1i(scopeShapeBind, props.scopeShape);
+    gl.uniform1f(scopeRotationBind, scopeRotation.value);
+    gl.uniform1f(scopeSizeBind, scopeSize.value);
     gl.uniform2f(canvasDimensionsBind, canvasSize, canvasSize);
     gl.drawArrays(gl.TRIANGLES, 0, 6);
     requestAnimationFrame(animate);
