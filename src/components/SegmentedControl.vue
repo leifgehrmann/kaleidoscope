@@ -246,25 +246,7 @@ onMounted(() => {
             v-if="index > 0"
             class="select-none py-2"
             :style="{ width: gapWidth }"
-          >
-            <span
-              class="
-                mx-auto block
-                w-0.5 h-full
-                bg-white
-                rounded-lg
-                transition-opacity ease-out duration-300
-              "
-              :class="{
-                'opacity-20': !(
-                  (index - 1 === mountedSelectedIndex) || (index === mountedSelectedIndex)
-                ),
-                'opacity-0': (
-                  (index - 1 === mountedSelectedIndex) || (index === mountedSelectedIndex)
-                ),
-              }"
-            />
-          </div>
+          />
           <button
             v-if="item !== null"
             :aria-label="item.buttonAriaLabel"
