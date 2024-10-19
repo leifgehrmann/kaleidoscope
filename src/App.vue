@@ -14,7 +14,10 @@ function updateSelectedIndex (value: number) {
 
 <template>
   <Kaleidoscope :scope-shape="selectedIndex" />
-  <div class="absolute bottom-0 w-full flex justify-center gap-2 px-2 py-2 items-center">
+  <div
+    class="absolute bottom-0 w-full flex justify-center gap-2 px-2 py-2 items-center"
+    style="bottom: calc(env(safe-area-inset-bottom))"
+  >
     <SegmentedControl
       class="w-full max-w-48"
       :options="options"
