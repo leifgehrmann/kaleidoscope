@@ -1,8 +1,13 @@
 <script setup lang="ts">
 import {ref, onMounted, computed, useTemplateRef, watch} from 'vue';
 
+export interface Option {
+  buttonAriaLabel: string;
+  imageUrl: string; 
+}
+
 const props = defineProps<{
-  options: string[]
+  options: Option[]
   selectedIndex: number
 }>();
 
@@ -262,6 +267,7 @@ onMounted(() => {
           </div>
           <button
             v-if="item !== null"
+            :aria-label="item.buttonAriaLabel"
             type="button"
             class="
               py-2 rounded-lg
@@ -279,7 +285,7 @@ onMounted(() => {
             @keydown.right="selectButtonToTheRight"
           >
             <span
-              class="transition transform block ease-out duration-300 pointer-events-none"
+              class="transition transform flex ease-out duration-300 pointer-events-none justify-center items-center"
               :class="{
                 'opacity-100 scale-95': index === mountedSelectedIndex,
                 'opacity-70': (
@@ -293,7 +299,10 @@ onMounted(() => {
                 'transform-origin': `${selectedOptionTransformationOrigin} center`,
               }"
             >
-              {{ item }}
+              <img
+                :src="item.imageUrl"
+                :alt="item.buttonAriaLabel"
+              >
             </span>
           </button>
         </template>

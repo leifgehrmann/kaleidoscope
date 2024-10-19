@@ -1,10 +1,25 @@
 <script setup lang="ts">
 import Kaleidoscope from './components/Kaleidoscope.vue';
-import SegmentedControl from './components/SegmentedControl.vue';
-import {ref} from 'vue';
+import SegmentedControl, { Option } from './components/SegmentedControl.vue';
+import { ref } from 'vue';
 
-const options = [
-    '▲', '◣', '◣', '◽️'
+const options: Option[] = [
+  {
+    buttonAriaLabel: 'Equilateral',
+    imageUrl: '/equilateral.svg',
+  },
+  {
+    buttonAriaLabel: 'Isosceles',
+    imageUrl: '/isosceles.svg',
+  },
+  {
+    buttonAriaLabel: 'Scalene',
+    imageUrl: '/scalene.svg',
+  },
+  {
+    buttonAriaLabel: 'Square',
+    imageUrl: '/square.svg',
+  }
 ];
 const selectedIndex = ref(0);
 function updateSelectedIndex (value: number) {
