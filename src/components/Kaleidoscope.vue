@@ -73,7 +73,7 @@ async function main() {
   // Fragment shader: sample video texture, change colors
   const fshader = gl.createShader(gl.FRAGMENT_SHADER)!;
   gl.shaderSource(fshader,`
-      precision mediump float;
+      precision highp float;
 
       uniform sampler2D data;
       uniform vec2 dataDimensions;
