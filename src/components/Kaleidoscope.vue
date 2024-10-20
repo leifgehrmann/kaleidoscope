@@ -463,16 +463,10 @@ onMounted(() => {
       y: mouseEvent.clientY,
     };
   });
-  document.addEventListener('mouseup', (mouseEvent) => {
+  document.addEventListener('mouseup', () => {
     if (mousePrevPosition === null) {
       return;
     }
-    // const delta = {
-    //   dx: mouseEvent.clientX - mousePrevPosition.x,
-    //   dy: mouseEvent.clientY - mousePrevPosition.y,
-    // };
-    // scopeRotation.value += delta.dx / 100;
-    // scopeSize.value *= 1.0 - delta.dy / 100;
     mousePrevPosition = null;
   });
 
