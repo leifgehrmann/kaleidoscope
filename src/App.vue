@@ -49,15 +49,14 @@ function updateIsUserAutoRotating(value: boolean) {
     @update:is-user-auto-rotating="updateIsUserAutoRotating"
   />
   <div
-    class="absolute bottom-0 w-full flex flex-col justify-center gap-1 px-2 py-1 items-center"
-    style="bottom: calc(env(safe-area-inset-bottom))"
+    class="absolute top-0 w-full flex flex-col justify-center gap-1 px-2 py-1 items-center"
+    style="top: calc(env(safe-area-inset-top))"
   >
     <div
       class="
         w-full
         max-w-[10.5rem]
         relative
-        pb-1
       "
     >
       <div
@@ -70,8 +69,8 @@ function updateIsUserAutoRotating(value: boolean) {
       "
         :class="{
           'bg-neutral-800 bg-opacity-0': !isUserAutoRotating && !isUserPressing,
-          'bg-neutral-800 bg-opacity-70 backdrop-blur-xl': !isUserAutoRotating && isUserPressing,
-          'bg-white bg-opacity-70 backdrop-blur-xl': isUserAutoRotating,
+          'bg-neutral-800 bg-opacity-70 backdrop-blur-xl ring-1 ring-white/10': !isUserAutoRotating && isUserPressing,
+          'bg-white bg-opacity-100 ring-1 ring-neutral-800/20': isUserAutoRotating,
           'transition-all': !isUserPressing
         }"
         :style="{
@@ -80,6 +79,11 @@ function updateIsUserAutoRotating(value: boolean) {
         }"
       />
     </div>
+  </div>
+  <div
+    class="absolute bottom-0 w-full flex flex-col justify-center gap-1 px-2 py-1 items-center"
+    style="bottom: calc(env(safe-area-inset-bottom))"
+  >
     <SegmentedControl
       class="w-full max-w-48"
       :options="options"
