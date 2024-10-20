@@ -466,7 +466,7 @@ function touchMoveCallback(event: TouchEvent) {
 
   const autoRotateThreshold = Math.min(Math.max(window.innerWidth * 0.2, 50), 200);
   if (Math.abs(deltaOriginX) > autoRotateThreshold) {
-    scopeRotationVel.value = Math.pow((Math.abs(deltaOriginX) - autoRotateThreshold) / 200, 2) * Math.sign(deltaOriginX);
+    scopeRotationVel.value = Math.pow((Math.abs(deltaOriginX) - autoRotateThreshold) / 500, 2) * Math.sign(deltaOriginX);
   } else {
     scopeRotationVel.value = deltaPrevX / 10;
   }
