@@ -6,7 +6,8 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits([
-    'update:scope-rotation-velocity',
+    'update:pointer-pressing-delta-x',
+    'update:is-user-pressing',
     'update:is-user-auto-rotating',
 ]);
 
@@ -16,6 +17,8 @@ const scopeSize = ref(0.5);
 const scopeOffset = ref([0.0, 0.0]);
 const scopeSizeVel = ref(0.0);
 const scopeRotationVel = ref(0.0);
+const pointerPressingDeltaX = ref(0.0);
+const isUserPressing = ref(false);
 const isUserAutoRotating = ref(false);
 const canvas = useTemplateRef('canvas');
 
@@ -375,7 +378,7 @@ async function main() {
     if (touchOrigin1 === null && mousePrevPosition === null) {
       scopeRotationVel.value *= 0.99;
       scopeSizeVel.value *= 0.95;
-      scopeSize.value *= 1 + scopeSizeVel.value;
+      scopeSize.value *= 1 + Math.min(scopeSizeVel.value, 0.99);
       if (scopeSize.value > 2.0) {
         scopeSize.value -= (scopeSize.value - 2) / 10;
       }
@@ -410,10 +413,12 @@ interface Point {
   clientX: number;
   clientY: number;
 }
+let mousePrevTime = new Date().getTime();
 let mousePrevPosition = null as null|{x: number, y: number};
 let mouseOriginPosition = null as null|{x: number, y: number};
 let touchId1: null|number = null;
 let touchOrigin1: null|Point = null;
+let touchPrevTime = new Date().getTime();
 let touchPrev1: null|Point = null;
 
 function getTouchById(touches: TouchList, id: number): Touch | null {
@@ -434,6 +439,8 @@ function touchStartCallback(event: TouchEvent) {
   touchId1 = touch.identifier;
   touchPrev1 = touch;
   touchOrigin1 = touch;
+  touchPrevTime = new Date().getTime();
+  isUserPressing.value = true;
 }
 
 function touchMoveCallback(event: TouchEvent) {
@@ -444,21 +451,31 @@ function touchMoveCallback(event: TouchEvent) {
   if (touch === null) {
     return;
   }
-  const deltaOriginX = touch.clientX - touchOrigin1.clientX;
-  // const deltaPrevX = touch.clientX - touchPrev1.clientX;
-  const deltaY = touch.clientY - touchPrev1.clientY;
-  scopeRotationVel.value = scopeRotationVel.value * 0.2 + Math.pow(deltaOriginX / 1000, 2) * Math.sign(deltaOriginX);
-  // if (Math.abs(deltaOriginX) > 20) {
-  //   scopeRotationVel.value = (deltaOriginX - 20 * Math.sign(deltaOriginX)) / 1000;
-  // } else {
-  //   scopeRotationVel.value = 0;
-  // }
-  if (Math.abs(scopeRotationVel.value) > 0) {
-    isUserAutoRotating.value = true;
+  if (new Date().getTime() - touchPrevTime < 0.001) {
+    return;
   }
-  // scopeRotation.value += deltaPrevX / 100;
-  scopeSize.value *= 1.0 + deltaY / 100;
-  scopeSizeVel.value = deltaY / 500;
+  const deltaTime = Math.max(new Date().getTime() - touchPrevTime, 0.001);
+  const deltaOriginX = touch.clientX - touchOrigin1.clientX;
+  const deltaPrevX = (touch.clientX - touchPrev1.clientX) / deltaTime;
+  const deltaY = (touch.clientY - touchPrev1.clientY) / deltaTime;
+
+  const autoRotateThreshold = Math.min(Math.max(window.innerWidth * 0.2, 50), 200);
+  if (Math.abs(deltaOriginX) > autoRotateThreshold) {
+    scopeRotationVel.value = Math.pow((Math.abs(deltaOriginX) - autoRotateThreshold) / 1000, 2) * Math.sign(deltaOriginX);
+  } else {
+    scopeRotationVel.value = deltaPrevX / 50;
+  }
+  if (Math.abs(deltaOriginX) < autoRotateThreshold || Math.sign(scopeRotationVel.value) == Math.sign(deltaPrevX)) {
+    scopeRotation.value += deltaPrevX / 50;
+  } else {
+    scopeRotation.value += deltaPrevX / 50 / (Math.abs(deltaOriginX) - autoRotateThreshold + 1);
+  }
+
+  pointerPressingDeltaX.value = deltaOriginX;
+  scopeSize.value *= 1.0 + deltaY / 50;
+  scopeSizeVel.value = deltaY / 50;
+  isUserAutoRotating.value = Math.abs(deltaOriginX) > autoRotateThreshold;
+  touchPrevTime = new Date().getTime();
   touchPrev1 = touch;
 }
 
@@ -470,14 +487,20 @@ function touchEndCallback(event: TouchEvent) {
   if (touch === null) {
     return;
   }
+  pointerPressingDeltaX.value = 0;
   isUserAutoRotating.value = false;
+  isUserPressing.value = false;
   touchId1 = null;
   touchPrev1 = null;
   touchOrigin1 = null;
 }
 
-watch(scopeRotationVel, () => {
-  emit('update:scope-rotation-velocity', scopeRotationVel.value);
+watch(pointerPressingDeltaX, () => {
+  emit('update:pointer-pressing-delta-x', pointerPressingDeltaX.value);
+});
+
+watch(isUserPressing, () => {
+  emit('update:is-user-pressing', isUserPressing.value);
 });
 
 watch(isUserAutoRotating, () => {
@@ -490,28 +513,40 @@ onMounted(() => {
   const canvasElement = canvas.value as HTMLCanvasElement;
 
   canvasElement.addEventListener('mousedown', (mouseEvent) => {
+    mousePrevTime = new Date().getTime();
     mousePrevPosition = {
       x: mouseEvent.clientX,
       y: mouseEvent.clientY,
     };
+    isUserPressing.value = true;
     mouseOriginPosition = mousePrevPosition;
+    scopeRotationVel.value = 0;
   });
   document.addEventListener('mousemove', (mouseEvent) => {
     if (mousePrevPosition === null || mouseOriginPosition === null) {
       return;
     }
+    const deltaTime = Math.max(new Date().getTime() - mousePrevTime, 0.001);
     const deltaOriginX = mouseEvent.clientX - mouseOriginPosition.x;
-    // const deltaPrevX = mouseEvent.clientX - mousePrevPosition.x;
-    const deltaY = mouseEvent.clientY - mousePrevPosition.y;
-    scopeRotationVel.value = scopeRotationVel.value * 0.2 + Math.pow(deltaOriginX / 1000, 2) * Math.sign(deltaOriginX);
-    // if (Math.abs(scopeRotationVel.value) < Math.PI / 60) {
-    //   scopeRotation.value += deltaPrevX / 100 + scopeRotationVel.value;
-    // }
-    scopeSize.value *= 1.0 + deltaY / 500;
-    scopeSizeVel.value = deltaY / 500;
-    if (Math.abs(scopeRotationVel.value) > 0) {
-      isUserAutoRotating.value = true;
+    const deltaPrevX = (mouseEvent.clientX - mousePrevPosition.x) / deltaTime;
+    const deltaY = (mouseEvent.clientY - mousePrevPosition.y) / deltaTime;
+    const autoRotateThreshold = Math.min(Math.max(window.innerWidth * 0.10, 50), 200);
+    if (Math.abs(deltaOriginX) > autoRotateThreshold) {
+      scopeRotationVel.value = Math.pow((Math.abs(deltaOriginX) - autoRotateThreshold) / 1000, 2) * Math.sign(deltaOriginX);
+    } else {
+      scopeRotationVel.value = deltaPrevX / 50;
     }
+    if (Math.abs(deltaOriginX) < autoRotateThreshold || Math.sign(scopeRotationVel.value) == Math.sign(deltaPrevX)) {
+      scopeRotation.value += deltaPrevX / 50;
+    } else {
+      scopeRotation.value += deltaPrevX / 50 / (Math.abs(deltaOriginX) - autoRotateThreshold + 1);
+    }
+
+    pointerPressingDeltaX.value = deltaOriginX;
+    scopeSize.value *= 1.0 + deltaY / 50;
+    scopeSizeVel.value = deltaY / 50;
+    isUserAutoRotating.value = Math.abs(deltaOriginX) > autoRotateThreshold;
+    mousePrevTime = new Date().getTime();
     mousePrevPosition = {
       x: mouseEvent.clientX,
       y: mouseEvent.clientY,
@@ -521,9 +556,17 @@ onMounted(() => {
     if (mousePrevPosition === null || mouseOriginPosition === null) {
       return;
     }
+    pointerPressingDeltaX.value = 0;
+    isUserPressing.value = false;
     isUserAutoRotating.value = false;
     mousePrevPosition = null;
     mouseOriginPosition = null;
+  });
+
+  document.addEventListener('wheel', (wheelEvent) => {
+    wheelEvent.preventDefault();
+    scopeRotation.value += wheelEvent.deltaX / 500;
+    scopeSize.value *= 1.0 - wheelEvent.deltaY / 500;
   });
 
   canvasElement.addEventListener('touchstart', touchStartCallback);

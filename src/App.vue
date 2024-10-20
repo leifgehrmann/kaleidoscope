@@ -23,6 +23,7 @@ const options: Option[] = [
 ];
 
 const autoRotationBarPercentage = ref(0);
+const isUserPressing = ref(false);
 const isUserAutoRotating = ref(false);
 const selectedIndex = ref(0);
 function updateSelectedIndex (value: number) {
@@ -30,7 +31,10 @@ function updateSelectedIndex (value: number) {
 }
 
 function updateAutoRotationBarPercentage (value: number) {
-  autoRotationBarPercentage.value = Math.min(-1 / (Math.abs(value * 20) + 1) + 1, 1) * Math.sign(value);
+  autoRotationBarPercentage.value = Math.min(-1 / (Math.abs(value) / 100 + 1) + 1, 1) * Math.sign(value);
+}
+function updateIsUserPressing(value: boolean) {
+  isUserPressing.value = value;
 }
 function updateIsUserAutoRotating(value: boolean) {
   isUserAutoRotating.value = value;
@@ -40,7 +44,8 @@ function updateIsUserAutoRotating(value: boolean) {
 <template>
   <Kaleidoscope
     :scope-shape="selectedIndex"
-    @update:scope-rotation-velocity="updateAutoRotationBarPercentage"
+    @update:pointer-pressing-delta-x="updateAutoRotationBarPercentage"
+    @update:is-user-pressing="updateIsUserPressing"
     @update:is-user-auto-rotating="updateIsUserAutoRotating"
   />
   <div
@@ -58,17 +63,22 @@ function updateIsUserAutoRotating(value: boolean) {
       <div
         class="
         p-0.5
-        bg-neutral-800
         bg-opacity-70
         backdrop-blur-xl
         rounded-xl
         absolute
-        transition-opacity ease-in
+        transition-colors
+        ease-in
       "
+        :class="{
+          'bg-neutral-800 bg-opacity-0': !isUserAutoRotating && !isUserPressing,
+          'bg-neutral-800 bg-opacity-70': !isUserAutoRotating && isUserPressing,
+          'bg-white bg-opacity-70': isUserAutoRotating,
+          'transition-all': !isUserPressing
+        }"
         :style="{
           width: 'calc(0.25rem + (' + (Math.abs(autoRotationBarPercentage) * 50) + '%))',
-          left: 'calc(' + ((autoRotationBarPercentage > 0 ? 0.5 : (0.5 - Math.abs(autoRotationBarPercentage) * 0.5)) * 100) + '% - 0.25rem / 2)',
-          opacity: (isUserAutoRotating && Math.abs(autoRotationBarPercentage) > 0.01) ? '100%' : '0%',
+          left: 'calc(' + ((autoRotationBarPercentage > 0 ? 0.5 : (0.5 - Math.abs(autoRotationBarPercentage) * 0.5)) * 100) + '% - 0.25rem / 2)'
         }"
       />
     </div>
