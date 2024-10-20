@@ -313,7 +313,7 @@ async function main() {
           i.x = (-dataWindowSize / 2.0 + k.x * dataWindowSize) * (dataIsFacingUser == 1 ? -1.0 : 1.0);
           // y-axis is flipped because of openGL coordinate space
           i.y = - (-dataWindowSize / 2.0 + k.y * dataWindowSize);
-          i = rotate2d(i, -scopeRotation);
+          i = rotate2d(i, scopeRotation * (dataIsFacingUser == 1 ? -1.0 : 1.0));
           i.x += dataDimensions.x / 2.0;
           i.y += dataDimensions.y / 2.0;
 
