@@ -63,7 +63,6 @@ function updateIsUserAutoRotating(value: boolean) {
       <div
         class="
         p-0.5
-        backdrop-blur-xl
         rounded-xl
         absolute
         transition-colors
@@ -71,8 +70,8 @@ function updateIsUserAutoRotating(value: boolean) {
       "
         :class="{
           'bg-neutral-800 bg-opacity-0': !isUserAutoRotating && !isUserPressing,
-          'bg-neutral-800 bg-opacity-70': !isUserAutoRotating && isUserPressing,
-          'bg-white bg-opacity-70': isUserAutoRotating,
+          'bg-neutral-800 bg-opacity-70 backdrop-blur-xl': !isUserAutoRotating && isUserPressing,
+          'bg-white bg-opacity-70 backdrop-blur-xl': isUserAutoRotating,
           'transition-all': !isUserPressing
         }"
         :style="{
