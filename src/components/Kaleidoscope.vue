@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import {ref, onMounted, useTemplateRef} from 'vue';
 
 const props = defineProps<{
   scopeShape: number // Todo replace with enum
@@ -9,6 +9,7 @@ const facingMode = ref('unknown');
 const scopeRotation = ref(0.0);
 const scopeSize = ref(0.5);
 const scopeOffset = ref([0.0, 0.0]);
+const canvas = useTemplateRef('canvas');
 
 async function main() {
   // Capture webcam input using invisible `video` element
@@ -384,14 +385,141 @@ async function main() {
   animate();
 }
 
+interface Point {
+  clientX: number;
+  clientY: number;
+}
+let touchId1: null|number = null;
+let touchPrev1: null|Point = null;
+
+function getTouchById(touches: TouchList, id: number): Touch | null {
+  for (let i = 0; i < touches.length; i += 1) {
+    if (touches[i].identifier === id) {
+      return touches[i];
+    }
+  }
+  return null;
+}
+
+function touchStartCallback(event: TouchEvent) {
+  event.preventDefault();
+  if (touchId1 !== null) {
+    return;
+  }
+  const touch = event.changedTouches[0];
+  touchId1 = touch.identifier;
+  touchPrev1 = touch;
+}
+
+function touchMoveCallback(event: TouchEvent) {
+  if (touchId1 === null || touchPrev1 === null) {
+    return;
+  }
+  const touch = getTouchById(event.changedTouches, touchId1);
+  if (touch === null) {
+    return;
+  }
+  const deltaX = touch.clientX - touchPrev1.clientX;
+  const deltaY = touch.clientY - touchPrev1.clientY;
+  scopeRotation.value += deltaX / 100;
+  scopeSize.value *= 1.0 + deltaY / 100;
+  touchPrev1 = touch;
+}
+
+function touchEndCallback(event: TouchEvent) {
+  if (touchId1 === null || touchPrev1 === null) {
+    return;
+  }
+  const touch = getTouchById(event.changedTouches, touchId1);
+  if (touch === null) {
+    return;
+  }
+  touchId1 = null;
+  touchPrev1 = null;
+}
+
 onMounted(() => {
   main();
+
+  const canvasElement = canvas.value as HTMLCanvasElement;
+
+  let mousePrevPosition = null as null|{x: number, y: number};
+  canvasElement.addEventListener('mousedown', (mouseEvent) => {
+    mousePrevPosition = {
+      x: mouseEvent.clientX,
+      y: mouseEvent.clientY,
+    };
+  });
+  document.addEventListener('mousemove', (mouseEvent) => {
+    if (mousePrevPosition === null) {
+      return;
+    }
+    const deltaX = mouseEvent.clientX - mousePrevPosition.x;
+    const deltaY = mouseEvent.clientY - mousePrevPosition.y;
+    scopeRotation.value += deltaX / 100;
+    scopeSize.value *= 1.0 + deltaY / 100;
+    mousePrevPosition = {
+      x: mouseEvent.clientX,
+      y: mouseEvent.clientY,
+    };
+  });
+  document.addEventListener('mouseup', (mouseEvent) => {
+    if (mousePrevPosition === null) {
+      return;
+    }
+    // const delta = {
+    //   dx: mouseEvent.clientX - mousePrevPosition.x,
+    //   dy: mouseEvent.clientY - mousePrevPosition.y,
+    // };
+    // scopeRotation.value += delta.dx / 100;
+    // scopeSize.value *= 1.0 - delta.dy / 100;
+    mousePrevPosition = null;
+  });
+
+  canvasElement.addEventListener('touchstart', touchStartCallback);
+  canvasElement.addEventListener('touchmove', touchMoveCallback);
+  canvasElement.addEventListener('touchend', touchEndCallback);
 });
+
+document.addEventListener('keydown', (keyEvent) => {
+  if (keyEvent.key == 'a') {
+    scopeRotation.value -= 0.1;
+  } else if (keyEvent.key == 'd') {
+    scopeRotation.value += 0.1;
+  }
+
+  if (keyEvent.key == 'w') {
+    scopeSize.value *= 0.9;
+  } else if (keyEvent.key == 's') {
+    scopeSize.value *= 1.1;
+  }
+
+  if (keyEvent.code == 'ArrowDown') {
+    scopeOffset.value[0] += Math.sin(scopeRotation.value) * -0.1;
+    scopeOffset.value[1] += Math.cos(scopeRotation.value) * -0.1;
+  } else if (keyEvent.key == 'ArrowUp') {
+    scopeOffset.value[0] += Math.sin(scopeRotation.value) * 0.1;
+    scopeOffset.value[1] += Math.cos(scopeRotation.value) * 0.1;
+  } else if (keyEvent.key == 'ArrowLeft') {
+    scopeOffset.value[0] += Math.cos(scopeRotation.value) * -0.1;
+    scopeOffset.value[1] += Math.sin(scopeRotation.value) * -0.1;
+  } else if (keyEvent.key == 'ArrowRight') {
+    scopeOffset.value[0] += Math.cos(scopeRotation.value) * 0.1;
+    scopeOffset.value[1] += Math.sin(scopeRotation.value) * 0.1;
+  }
+  const scopeOffsetDistance = Math.sqrt(scopeOffset.value[0] * scopeOffset.value[0] + scopeOffset.value[1] * scopeOffset.value[1])
+  if (scopeOffsetDistance > 1) {
+    scopeOffset.value[0] /= scopeOffsetDistance;
+    scopeOffset.value[1] /= scopeOffsetDistance;
+  }
+});
+
 </script>
 
 <template>
   <canvas
     id="maincanvas"
+    ref="canvas"
     style="width:100dvw;height:100dvh;object-fit:cover"
   />
   <video
