@@ -63,7 +63,6 @@ function updateIsUserAutoRotating(value: boolean) {
       <div
         class="
         p-0.5
-        bg-opacity-70
         backdrop-blur-xl
         rounded-xl
         absolute

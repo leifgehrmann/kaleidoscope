@@ -463,12 +463,12 @@ function touchMoveCallback(event: TouchEvent) {
   if (Math.abs(deltaOriginX) > autoRotateThreshold) {
     scopeRotationVel.value = Math.pow((Math.abs(deltaOriginX) - autoRotateThreshold) / 1000, 2) * Math.sign(deltaOriginX);
   } else {
-    scopeRotationVel.value = deltaPrevX / 50;
+    scopeRotationVel.value = deltaPrevX / 10;
   }
   if (Math.abs(deltaOriginX) < autoRotateThreshold || Math.sign(scopeRotationVel.value) == Math.sign(deltaPrevX)) {
-    scopeRotation.value += deltaPrevX / 50;
+    scopeRotation.value += deltaPrevX / 10;
   } else {
-    scopeRotation.value += deltaPrevX / 50 / (Math.abs(deltaOriginX) - autoRotateThreshold + 1);
+    scopeRotation.value += deltaPrevX / 10 / (Math.abs(deltaOriginX) - autoRotateThreshold + 1);
   }
 
   pointerPressingDeltaX.value = deltaOriginX;
@@ -600,7 +600,7 @@ document.addEventListener('keydown', (keyEvent) => {
     scopeOffset.value[0] += Math.cos(scopeRotation.value) * 0.1;
     scopeOffset.value[1] += Math.sin(scopeRotation.value) * 0.1;
   }
-  const scopeOffsetDistance = Math.sqrt(scopeOffset.value[0] * scopeOffset.value[0] + scopeOffset.value[1] * scopeOffset.value[1])
+  const scopeOffsetDistance = Math.sqrt(scopeOffset.value[0] * scopeOffset.value[0] + scopeOffset.value[1] * scopeOffset.value[1]);
   if (scopeOffsetDistance > 1) {
     scopeOffset.value[0] /= scopeOffsetDistance;
     scopeOffset.value[1] /= scopeOffsetDistance;
