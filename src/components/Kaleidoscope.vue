@@ -8,6 +8,7 @@ const props = defineProps<{
 const facingMode = ref('unknown');
 const scopeRotation = ref(0.0);
 const scopeSize = ref(0.5);
+const scopeOffset = ref([0.0, 0.0]);
 
 async function main() {
   // Capture webcam input using invisible `video` element
@@ -69,6 +70,7 @@ async function main() {
       uniform int scopeShape;
       uniform float scopeRotation;
       uniform float scopeSize;
+      uniform vec2 scopeOffset;
 
       float round(float v) {
           return floor(v + 0.5);
@@ -118,7 +120,7 @@ async function main() {
         return pos;
       }
 
-      vec2 square(vec2 u, float kLength, float kRot) {
+      vec2 square(vec2 u, float kLength, float kRot, vec2 offset) {
 
         u -= vec2(0.5, 0.5);
         u = rotate2d(u,kRot);
@@ -129,6 +131,8 @@ async function main() {
         u.x *= sqrt(2.0);
         u.y *= sqrt(2.0);
         u += vec2((1.0-sqrt(2.0))/2.0, (1.0-sqrt(2.0))/2.0);
+
+        u += offset;
 
         float kOffset = (1.0/1.0 - 1.0) / (1.0/1.0 * 2.0);
         vec2 k = vec2(0.0, 0.0);
@@ -145,7 +149,7 @@ async function main() {
         return k;
       }
 
-      vec2 equilateral(vec2 u, float kLength, float kRot) {
+      vec2 equilateral(vec2 u, float kLength, float kRot, vec2 offset) {
         // Center the triangle in a circle
 
         u -= vec2(0.5, 0.5);
@@ -156,6 +160,8 @@ async function main() {
 
         u += vec2(0.5, 0.5);
         u.y -= (0.25) * sqrt(3.0) / 2.0;
+
+        u += offset;
 
         vec2 k = vec2(0.0, 0.0);
 
@@ -186,7 +192,7 @@ async function main() {
         return k;
       }
 
-      vec2 isosceles(vec2 u, float kLength, float kRot) {
+      vec2 isosceles(vec2 u, float kLength, float kRot, vec2 offset) {
         // Center the triangle in a circle
         u -= vec2(0.5, 0.5);
 
@@ -196,6 +202,8 @@ async function main() {
 
         u += vec2(0.5, 0.5);
         u -= 0.25;
+
+        u += offset;
 
         vec2 k = vec2(0.0, 0.0);
 
@@ -220,7 +228,7 @@ async function main() {
         return k;
       }
 
-      vec2 scalene(vec2 u, float kLength, float kRot) {
+      vec2 scalene(vec2 u, float kLength, float kRot, vec2 offset) {
         u -= 0.5;
 
         u = rotate2d(u,kRot + radians(60.0));
@@ -230,6 +238,8 @@ async function main() {
 
         u.x -= sin(radians(90.0)) * 0.50;
         u.y -= cos(radians(90.0)) * 0.50;
+
+        u += offset;
 
         vec2 k = vec2(0.0, 0.0);
 
@@ -275,25 +285,22 @@ async function main() {
           // Position in kaleidoscope space
           // In opengl, y-coordinate is flipped
           vec2 u = vec2(fragCoord.x,1.0-fragCoord.y);
-          // u -= vec2(0.5, 0.5);
           vec2 k = u;
-          // k = rotate2d(k, scopeRotation);
-          // k += vec2(0.5, 0.5);
-
 
           vec2 scopeOrigin = vec2(0.0, 0.0);
           float scopeDiameterRatio = sqrt(2.0);
+          vec2 d = rotate2d(scopeOffset, 0.0);
           if (scopeShape == 0) {
-            k = equilateral(k, scopeSize, scopeRotation);
+            k = equilateral(k, scopeSize, scopeRotation, d);
             scopeDiameterRatio = 1.0;
           } else if (scopeShape == 1) {
-            k = isosceles(k, scopeSize, scopeRotation);
-          } else if (scopeShape == 2) {
-            scopeDiameterRatio = 1.0;
-            k = scalene(k, scopeSize, scopeRotation);
-          } else {
-            k = square(k, scopeSize, scopeRotation);
+            k = square(k, scopeSize, scopeRotation, d);
             scopeDiameterRatio = sqrt(2.0);
+          } else if (scopeShape == 2) {
+            k = isosceles(k, scopeSize, scopeRotation, d);
+          } else {
+            scopeDiameterRatio = 1.0;
+            k = scalene(k, scopeSize, scopeRotation, d);
           }
 
           // Now map the k value to coordinates on the image
@@ -351,6 +358,7 @@ async function main() {
   const scopeShapeBind = gl.getUniformLocation(program, 'scopeShape');
   const scopeRotationBind = gl.getUniformLocation(program, 'scopeRotation');
   const scopeSizeBind = gl.getUniformLocation(program, 'scopeSize');
+  const scopeOffsetBind = gl.getUniformLocation(program, 'scopeOffset');
 
   // Repeatedly pull camera data and render
   function animate(){
@@ -358,8 +366,17 @@ async function main() {
     gl.uniform2f(dataDimensionsBind, camera.videoWidth, camera.videoHeight);
     gl.uniform1i(dataIsFacingUserBind, facingMode.value === 'user' ? 1 : 0);
     gl.uniform1i(scopeShapeBind, props.scopeShape);
-    gl.uniform1f(scopeRotationBind, scopeRotation.value);
+    let scopeRotationOffset = 0;
+    if (props.scopeShape === 0) {
+      scopeRotationOffset = Math.PI / 3;
+    } else if (props.scopeShape === 2) {
+      scopeRotationOffset = -Math.PI / 2;
+    } else if (props.scopeShape === 3) {
+      scopeRotationOffset = -Math.PI / 2;
+    }
+    gl.uniform1f(scopeRotationBind, scopeRotation.value + scopeRotationOffset);
     gl.uniform1f(scopeSizeBind, scopeSize.value);
+    gl.uniform2f(scopeOffsetBind, scopeOffset.value[0], scopeOffset.value[1]);
     gl.uniform2f(canvasDimensionsBind, canvasSize, canvasSize);
     gl.drawArrays(gl.TRIANGLES, 0, 6);
     requestAnimationFrame(animate);

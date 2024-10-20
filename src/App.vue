@@ -9,16 +9,16 @@ const options: Option[] = [
     imageUrl: '/equilateral.svg',
   },
   {
+    buttonAriaLabel: 'Square',
+    imageUrl: '/square.svg',
+  },
+  {
     buttonAriaLabel: 'Isosceles',
     imageUrl: '/isosceles.svg',
   },
   {
     buttonAriaLabel: 'Scalene',
     imageUrl: '/scalene.svg',
-  },
-  {
-    buttonAriaLabel: 'Square',
-    imageUrl: '/square.svg',
   }
 ];
 const selectedIndex = ref(0);
@@ -30,7 +30,7 @@ function updateSelectedIndex (value: number) {
 <template>
   <Kaleidoscope :scope-shape="selectedIndex" />
   <div
-    class="absolute bottom-0 w-full flex justify-center gap-2 px-2 py-2 items-center"
+    class="absolute bottom-0 w-full flex justify-center gap-2 px-2 py-1 items-center"
     style="bottom: calc(env(safe-area-inset-bottom))"
   >
     <SegmentedControl
