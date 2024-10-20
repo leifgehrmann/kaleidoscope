@@ -9,6 +9,7 @@ const facingMode = ref('unknown');
 const scopeRotation = ref(0.0);
 const scopeSize = ref(0.5);
 const scopeOffset = ref([0.0, 0.0]);
+const scopeRotationVel = ref(0.0);
 const canvas = useTemplateRef('canvas');
 
 async function main() {
@@ -363,6 +364,11 @@ async function main() {
 
   // Repeatedly pull camera data and render
   function animate(){
+    scopeRotation.value += scopeRotationVel.value;
+    if (touchOrigin1 === null && mousePrevPosition === null) {
+      scopeRotationVel.value *= 0.9;
+    }
+
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, camera);
     gl.uniform2f(dataDimensionsBind, camera.videoWidth, camera.videoHeight);
     gl.uniform1i(dataIsFacingUserBind, facingMode.value === 'user' ? 1 : 0);
@@ -389,7 +395,10 @@ interface Point {
   clientX: number;
   clientY: number;
 }
+let mousePrevPosition = null as null|{x: number, y: number};
+let mouseOriginPosition = null as null|{x: number, y: number};
 let touchId1: null|number = null;
+let touchOrigin1: null|Point = null;
 let touchPrev1: null|Point = null;
 
 function getTouchById(touches: TouchList, id: number): Touch | null {
@@ -409,19 +418,22 @@ function touchStartCallback(event: TouchEvent) {
   const touch = event.changedTouches[0];
   touchId1 = touch.identifier;
   touchPrev1 = touch;
+  touchOrigin1 = touch;
 }
 
 function touchMoveCallback(event: TouchEvent) {
-  if (touchId1 === null || touchPrev1 === null) {
+  if (touchId1 === null || touchPrev1 === null || touchOrigin1 === null) {
     return;
   }
   const touch = getTouchById(event.changedTouches, touchId1);
   if (touch === null) {
     return;
   }
-  const deltaX = touch.clientX - touchPrev1.clientX;
+  const deltaX = touch.clientX - touchOrigin1.clientX;
   const deltaY = touch.clientY - touchPrev1.clientY;
-  scopeRotation.value += deltaX / 100;
+  if (Math.abs(deltaX) > 20) {
+    scopeRotationVel.value = (deltaX - 20 * Math.sign(deltaX)) / 1000;
+  }
   scopeSize.value *= 1.0 + deltaY / 100;
   touchPrev1 = touch;
 }
@@ -436,6 +448,7 @@ function touchEndCallback(event: TouchEvent) {
   }
   touchId1 = null;
   touchPrev1 = null;
+  touchOrigin1 = null;
 }
 
 onMounted(() => {
@@ -443,20 +456,22 @@ onMounted(() => {
 
   const canvasElement = canvas.value as HTMLCanvasElement;
 
-  let mousePrevPosition = null as null|{x: number, y: number};
   canvasElement.addEventListener('mousedown', (mouseEvent) => {
     mousePrevPosition = {
       x: mouseEvent.clientX,
       y: mouseEvent.clientY,
     };
+    mouseOriginPosition = mousePrevPosition;
   });
   document.addEventListener('mousemove', (mouseEvent) => {
-    if (mousePrevPosition === null) {
+    if (mousePrevPosition === null || mouseOriginPosition === null) {
       return;
     }
-    const deltaX = mouseEvent.clientX - mousePrevPosition.x;
+    const deltaX = mouseEvent.clientX - mouseOriginPosition.x;
     const deltaY = mouseEvent.clientY - mousePrevPosition.y;
-    scopeRotation.value += deltaX / 100;
+    if (Math.abs(deltaX) > 20) {
+      scopeRotationVel.value = (deltaX - 20 * Math.sign(deltaX)) / 1000;
+    }
     scopeSize.value *= 1.0 + deltaY / 100;
     mousePrevPosition = {
       x: mouseEvent.clientX,
