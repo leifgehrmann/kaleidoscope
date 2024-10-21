@@ -194,8 +194,12 @@ onMounted(() => {
       class="
         p-1
         relative
-        bg-neutral-800
-        bg-opacity-70
+        bg-neutral-300
+        bg-opacity-50
+        dark:bg-neutral-800
+        dark:bg-opacity-70
+        shadow-lg
+        dark:shadow-none
         backdrop-blur-xl
         rounded-xl
         text-sm
@@ -219,10 +223,12 @@ onMounted(() => {
             class="
               p-2
               absolute
-              bg-white
+              bg-black
               bg-opacity-20
+              dark:bg-white
+              dark:bg-opacity-20
               rounded-lg
-              shadow-lg
+              dark:shadow-lg
               transform
               transition-transform ease-out duration-300
             "
@@ -270,10 +276,10 @@ onMounted(() => {
               class="transition transform flex ease-out duration-300 pointer-events-none justify-center items-center"
               :class="{
                 'opacity-100 scale-95': index === mountedSelectedIndex,
-                'opacity-70': (
+                'dark:opacity-70': (
                   index !== mountedSelectedIndex && (!pressActive || index !== pressActiveIndex)
                 ),
-                'opacity-50': (
+                'dark:opacity-50': (
                   index === pressActiveIndex && index !== mountedSelectedIndex && pressActive
                 ),
               }"

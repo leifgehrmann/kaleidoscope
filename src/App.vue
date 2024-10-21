@@ -81,11 +81,11 @@ function updateIsUserAutoRotating(value: boolean) {
     </div>
   </div>
   <div
-    class="absolute bottom-0 w-full flex flex-col justify-center gap-1 px-2 py-1 items-center"
+    class="absolute bottom-0 w-full flex flex-col justify-center gap-1 px-2 py-1 items-center pointer-events-none"
     style="bottom: calc(env(safe-area-inset-bottom))"
   >
     <SegmentedControl
-      class="w-full max-w-48"
+      class="w-full max-w-48 pointer-events-auto"
       :options="options"
       :selected-index="selectedIndex"
       @update:selected-index="updateSelectedIndex"
