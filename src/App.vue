@@ -27,6 +27,7 @@ const autoRotationBarPercentage = ref(0);
 const isUserPressing = ref(false);
 const isUserAutoRotating = ref(false);
 const selectedIndex = ref(0);
+const scopeRotationVelocity = ref(0);
 function updateSelectedIndex (value: number) {
   selectedIndex.value = value;
 }
@@ -40,11 +41,17 @@ function updateIsUserPressing(value: boolean) {
 function updateIsUserAutoRotating(value: boolean) {
   isUserAutoRotating.value = value;
 }
+
+function updateScopeRotationVelocity(value: number) {
+  scopeRotationVelocity.value = value;
+}
+
 </script>
 
 <template>
   <Kaleidoscope
     :scope-shape="selectedIndex"
+    :scope-rotation-velocity="scopeRotationVelocity"
     @update:pointer-pressing-delta-x="updateAutoRotationBarPercentage"
     @update:is-user-pressing="updateIsUserPressing"
     @update:is-user-auto-rotating="updateIsUserAutoRotating"
@@ -87,6 +94,7 @@ function updateIsUserAutoRotating(value: boolean) {
   >
     <SteeringControl
       class="w-full max-w-48 h-6"
+      @update:velocity="updateScopeRotationVelocity"
     />
     <SegmentedControl
       class="w-full max-w-48 pointer-events-auto"

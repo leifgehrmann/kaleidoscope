@@ -2,7 +2,8 @@
 import {ref, onMounted, useTemplateRef, watch} from 'vue';
 
 const props = defineProps<{
-  scopeShape: number // Todo replace with enum
+  scopeShape: number, // Todo replace with enum
+  scopeRotationVelocity: number
 }>();
 
 const emit = defineEmits([
@@ -374,6 +375,9 @@ async function main() {
 
   // Repeatedly pull camera data and render
   function animate(){
+    if (!isUserPressing.value && props.scopeRotationVelocity !== 0) {
+      scopeRotationVel.value = props.scopeRotationVelocity / 100;
+    }
     if ((isUserPressing.value && isUserAutoRotating.value) || (touchOrigin1 === null && mousePrevPosition === null)) {
       scopeRotation.value += scopeRotationVel.value;
     }

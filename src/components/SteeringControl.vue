@@ -1,12 +1,14 @@
 <script setup lang="ts">
 
-import {computed, onMounted, ref, useTemplateRef} from 'vue';
+import {computed, onMounted, ref, useTemplateRef, watch} from 'vue';
 
 interface Circle {
   x: number,
   y: number,
   r: number
 }
+
+const emit = defineEmits(['update:velocity']);
 
 const resizeObserver = ref(null as null|ResizeObserver);
 const circleLeft = ref({x: 0, y: 0, r: 1} as Circle);
@@ -216,6 +218,10 @@ function getTouchById(touches: TouchList, id: number): Touch | null {
 function asymptote(value: number, limit: number, sharpness = 5) {
   return value * limit / (Math.pow(Math.pow(limit, sharpness) + Math.pow(Math.abs(value), sharpness), 1 / sharpness));
 }
+
+watch(steerVelocity, () => {
+  emit('update:velocity', steerVelocity.value);
+});
 
 onMounted(() => {
   const containerElement = getContainerElement();
