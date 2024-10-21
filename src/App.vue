@@ -2,6 +2,7 @@
 import Kaleidoscope from './components/Kaleidoscope.vue';
 import SegmentedControl, { Option } from './components/SegmentedControl.vue';
 import { ref } from 'vue';
+import SteeringControl from './components/SteeringControl.vue';
 
 const options: Option[] = [
   {
@@ -84,6 +85,9 @@ function updateIsUserAutoRotating(value: boolean) {
     class="absolute bottom-0 w-full flex flex-col justify-center gap-1 px-2 py-1 items-center pointer-events-none"
     style="bottom: calc(env(safe-area-inset-bottom))"
   >
+    <SteeringControl
+      class="w-full max-w-48 h-6"
+    />
     <SegmentedControl
       class="w-full max-w-48 pointer-events-auto"
       :options="options"
