@@ -24,13 +24,13 @@ const options: Option[] = [
 ];
 
 const selectedIndex = ref(0);
-const scopeRotationVelocity = ref(0);
+const scopeAutoRotationVelocity = ref(0);
 function updateSelectedIndex (value: number) {
   selectedIndex.value = value;
 }
 
-function updateScopeRotationVelocity(value: number) {
-  scopeRotationVelocity.value = value;
+function updateScopeAutoRotationVelocity(value: number) {
+  scopeAutoRotationVelocity.value = value;
 }
 
 </script>
@@ -38,7 +38,7 @@ function updateScopeRotationVelocity(value: number) {
 <template>
   <Kaleidoscope
     :scope-shape="selectedIndex"
-    :scope-rotation-velocity="scopeRotationVelocity"
+    :scope-auto-rotation-velocity="scopeAutoRotationVelocity"
   />
   <div
     class="absolute bottom-0 w-full flex flex-col justify-center gap-1 px-2 py-1 items-center pointer-events-none"
@@ -46,7 +46,7 @@ function updateScopeRotationVelocity(value: number) {
   >
     <SteeringControl
       class="w-full max-w-48 h-6"
-      @update:velocity="updateScopeRotationVelocity"
+      @update:velocity="updateScopeAutoRotationVelocity"
     />
     <SegmentedControl
       class="w-full max-w-48 pointer-events-auto"

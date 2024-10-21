@@ -3,7 +3,7 @@ import {ref, onMounted, useTemplateRef} from 'vue';
 
 const props = defineProps<{
   scopeShape: number, // Todo replace with enum
-  scopeRotationVelocity: number
+  scopeAutoRotationVelocity: number
 }>();
 
 const facingMode = ref('unknown');
@@ -367,8 +367,9 @@ async function main() {
 
   // Repeatedly pull camera data and render
   function animate(){
-    if (!isUserPressing.value && props.scopeRotationVelocity !== 0) {
-      scopeRotationVel.value = props.scopeRotationVelocity / 25;
+    if (props.scopeAutoRotationVelocity !== 0) {
+      scopeRotationVel.value = props.scopeAutoRotationVelocity / 25;
+      scopeRotation.value += scopeRotationVel.value;
     }
     if (touchOrigin1 === null && mousePrevPosition === null) {
       scopeRotation.value += scopeRotationVel.value;
