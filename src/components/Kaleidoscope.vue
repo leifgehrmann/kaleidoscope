@@ -1,16 +1,10 @@
 <script setup lang="ts">
-import {ref, onMounted, useTemplateRef, watch} from 'vue';
+import {ref, onMounted, useTemplateRef} from 'vue';
 
 const props = defineProps<{
   scopeShape: number, // Todo replace with enum
   scopeRotationVelocity: number
 }>();
-
-const emit = defineEmits([
-    'update:pointer-pressing-delta-x',
-    'update:is-user-pressing',
-    'update:is-user-auto-rotating',
-]);
 
 const facingMode = ref('unknown');
 const scopeRotation = ref(0.0);
@@ -18,9 +12,7 @@ const scopeSize = ref(0.5);
 const scopeOffset = ref([0.0, 0.0]);
 const scopeSizeVel = ref(0.0);
 const scopeRotationVel = ref(0.0);
-const pointerPressingDeltaX = ref(0.0);
 const isUserPressing = ref(false);
-const isUserAutoRotating = ref(false);
 const canvas = useTemplateRef('canvas');
 
 async function main() {
@@ -376,12 +368,10 @@ async function main() {
   // Repeatedly pull camera data and render
   function animate(){
     if (!isUserPressing.value && props.scopeRotationVelocity !== 0) {
-      scopeRotationVel.value = props.scopeRotationVelocity / 100;
-    }
-    if ((isUserPressing.value && isUserAutoRotating.value) || (touchOrigin1 === null && mousePrevPosition === null)) {
-      scopeRotation.value += scopeRotationVel.value;
+      scopeRotationVel.value = props.scopeRotationVelocity / 25;
     }
     if (touchOrigin1 === null && mousePrevPosition === null) {
+      scopeRotation.value += scopeRotationVel.value;
       scopeRotationVel.value *= 0.99;
       scopeSizeVel.value *= 0.95;
       scopeSize.value *= 1 + Math.min(scopeSizeVel.value, 0.99);
@@ -447,7 +437,6 @@ function touchStartCallback(event: TouchEvent) {
   touchOrigin1 = touch;
   touchPrevTime = new Date().getTime();
   isUserPressing.value = true;
-  pointerPressingDeltaX.value = 0;
   scopeRotationVel.value = 0;
   scopeSizeVel.value = 0;
 }
@@ -464,26 +453,23 @@ function touchMoveCallback(event: TouchEvent) {
     return;
   }
   const deltaTime = Math.max(new Date().getTime() - touchPrevTime, 0.001);
-  const deltaOriginX = touch.clientX - touchOrigin1.clientX;
-  const deltaPrevX = (touch.clientX - touchPrev1.clientX) / deltaTime;
+  const deltaX = (touch.clientX - touchPrev1.clientX) / deltaTime;
   const deltaY = (touch.clientY - touchPrev1.clientY) / deltaTime;
 
-  const autoRotateThreshold = Math.min(Math.max(window.innerWidth * 0.2, 50), 200);
-  if (Math.abs(deltaOriginX) > autoRotateThreshold) {
-    scopeRotationVel.value = Math.pow((Math.abs(deltaOriginX) - autoRotateThreshold) / 500, 2) * Math.sign(deltaOriginX);
+  scopeRotation.value += deltaX / 10;
+  if (Math.abs(touch.clientX - touchPrev1.clientX) > 1) {
+    scopeRotationVel.value = deltaX / 10;
   } else {
-    scopeRotationVel.value = deltaPrevX / 10;
-  }
-  if (Math.abs(deltaOriginX) < autoRotateThreshold || Math.sign(scopeRotationVel.value) == Math.sign(deltaPrevX)) {
-    scopeRotation.value += deltaPrevX / 10;
-  } else {
-    scopeRotation.value += deltaPrevX / 10 / (Math.abs(deltaOriginX) - autoRotateThreshold + 1);
+    scopeRotationVel.value = 0;
   }
 
-  pointerPressingDeltaX.value = deltaOriginX;
   scopeSize.value *= 1.0 + deltaY / 10;
-  scopeSizeVel.value = deltaY / 10;
-  isUserAutoRotating.value = Math.abs(deltaOriginX) > autoRotateThreshold;
+  if (Math.abs(touch.clientY - touchPrev1.clientY) > 1) {
+    scopeSizeVel.value = deltaY / 10;
+  } else {
+    scopeSizeVel.value = 0;
+  }
+
   touchPrevTime = new Date().getTime();
   touchPrev1 = touch;
 }
@@ -496,24 +482,11 @@ function touchEndCallback(event: TouchEvent) {
   if (touch === null) {
     return;
   }
-  isUserAutoRotating.value = false;
   isUserPressing.value = false;
   touchId1 = null;
   touchPrev1 = null;
   touchOrigin1 = null;
 }
-
-watch(pointerPressingDeltaX, () => {
-  emit('update:pointer-pressing-delta-x', pointerPressingDeltaX.value);
-});
-
-watch(isUserPressing, () => {
-  emit('update:is-user-pressing', isUserPressing.value);
-});
-
-watch(isUserAutoRotating, () => {
-  emit('update:is-user-auto-rotating', isUserAutoRotating.value);
-});
 
 onMounted(() => {
   main();
@@ -530,32 +503,29 @@ onMounted(() => {
     mouseOriginPosition = mousePrevPosition;
     scopeRotationVel.value = 0;
     scopeSizeVel.value = 0;
-    pointerPressingDeltaX.value = 0;
   });
   document.addEventListener('mousemove', (mouseEvent) => {
     if (mousePrevPosition === null || mouseOriginPosition === null) {
       return;
     }
     const deltaTime = Math.max(new Date().getTime() - mousePrevTime, 0.001);
-    const deltaOriginX = mouseEvent.clientX - mouseOriginPosition.x;
-    const deltaPrevX = (mouseEvent.clientX - mousePrevPosition.x) / deltaTime;
+    const deltaX = (mouseEvent.clientX - mousePrevPosition.x) / deltaTime;
     const deltaY = (mouseEvent.clientY - mousePrevPosition.y) / deltaTime;
-    const autoRotateThreshold = Math.min(Math.max(window.innerWidth * 0.10, 50), 200);
-    if (Math.abs(deltaOriginX) > autoRotateThreshold) {
-      scopeRotationVel.value = Math.pow((Math.abs(deltaOriginX) - autoRotateThreshold) / 1000, 2) * Math.sign(deltaOriginX);
+
+    scopeRotation.value += deltaX / 20;
+    if (Math.abs(mouseEvent.clientX - mousePrevPosition.x) > 1) {
+      scopeRotationVel.value = deltaX / 20;
     } else {
-      scopeRotationVel.value = deltaPrevX / 50;
-    }
-    if (Math.abs(deltaOriginX) < autoRotateThreshold || Math.sign(scopeRotationVel.value) == Math.sign(deltaPrevX)) {
-      scopeRotation.value += deltaPrevX / 50;
-    } else {
-      scopeRotation.value += deltaPrevX / 50 / (Math.abs(deltaOriginX) - autoRotateThreshold + 1);
+      scopeRotationVel.value = 0;
     }
 
-    pointerPressingDeltaX.value = deltaOriginX;
     scopeSize.value *= 1.0 + deltaY / 50;
-    scopeSizeVel.value = deltaY / 50;
-    isUserAutoRotating.value = Math.abs(deltaOriginX) > autoRotateThreshold;
+    if (Math.abs(mouseEvent.clientY - mousePrevPosition.y) > 1) {
+      scopeSizeVel.value = deltaY / 50;
+    } else {
+      scopeSizeVel.value = 0;
+    }
+
     mousePrevTime = new Date().getTime();
     mousePrevPosition = {
       x: mouseEvent.clientX,
@@ -566,8 +536,8 @@ onMounted(() => {
     if (mousePrevPosition === null || mouseOriginPosition === null) {
       return;
     }
+
     isUserPressing.value = false;
-    isUserAutoRotating.value = false;
     mousePrevPosition = null;
     mouseOriginPosition = null;
   });

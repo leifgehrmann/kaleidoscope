@@ -201,7 +201,6 @@ function animateCircles() {
       Math.abs(circleRightDeltaR)
   ;
   if (distanceSum > 0.01) {
-    console.log('running frame');
     requestAnimationFrame(animateCircles);
   }
 }
