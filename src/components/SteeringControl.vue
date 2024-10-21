@@ -301,7 +301,7 @@ onMounted(() => {
       }"
     >
       <svg
-        class="transition-opacity"
+        class="transition-opacity w-full h-full"
         :class="{
           'opacity-0': isSteering && Math.abs(steerVelocity) < 0.05,
           'opacity-100': !isSteering || (steerDirection !== 0 && Math.abs(steerVelocity) >= 0.05)
@@ -327,7 +327,7 @@ onMounted(() => {
         </g>
       </svg>
       <svg
-        class="transition-opacity absolute left-0 top-0"
+        class="transition-opacity w-full h-full absolute top-0 left-0"
         :class="{
           'opacity-0': !isSteering || Math.abs(steerVelocity) > 0.05,
           'opacity-100': isSteering && Math.abs(steerVelocity) < 0.05,
