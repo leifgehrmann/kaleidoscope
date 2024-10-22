@@ -489,6 +489,13 @@ function touchEndCallback(event: TouchEvent) {
   touchOrigin1 = null;
 }
 
+function touchCancelCallback() {
+  isUserPressing.value = false;
+  touchId1 = null;
+  touchPrev1 = null;
+  touchOrigin1 = null;
+}
+
 onMounted(() => {
   main();
 
@@ -552,6 +559,7 @@ onMounted(() => {
   canvasElement.addEventListener('touchstart', touchStartCallback);
   canvasElement.addEventListener('touchmove', touchMoveCallback);
   canvasElement.addEventListener('touchend', touchEndCallback);
+  canvasElement.addEventListener('touchcancel', touchCancelCallback);
 });
 
 document.addEventListener('keydown', (keyEvent) => {
