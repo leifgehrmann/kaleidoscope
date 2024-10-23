@@ -13,6 +13,10 @@ const scopeOffset = ref([0.0, 0.0]);
 const scopeSizeVel = ref(0.0);
 const scopeRotationVel = ref(0.0);
 const isUserPressing = ref(false);
+const keyPressedW = ref(false);
+const keyPressedA = ref(false);
+const keyPressedS = ref(false);
+const keyPressedD = ref(false);
 const canvas = useTemplateRef('canvas');
 
 async function main() {
@@ -367,6 +371,22 @@ async function main() {
 
   // Repeatedly pull camera data and render
   function animate(){
+    // Handle keyboard state
+    if (keyPressedA.value && keyPressedD.value) {
+      // Do nothing
+    } else if (keyPressedA.value) {
+      scopeRotationVel.value -= 0.0002;
+    } else if (keyPressedD.value) {
+      scopeRotationVel.value += 0.0002;
+    }
+    if (keyPressedW.value && keyPressedS.value) {
+      // Do nothing
+    } else if (keyPressedW.value) {
+      scopeSizeVel.value += 0.0002;
+    } else if (keyPressedS.value) {
+      scopeSizeVel.value -= 0.0002;
+    }
+
     if (props.scopeAutoRotationVelocity !== 0) {
       scopeRotationVel.value = props.scopeAutoRotationVelocity / 25;
       scopeRotation.value += scopeRotationVel.value;
@@ -560,39 +580,48 @@ onMounted(() => {
   canvasElement.addEventListener('touchmove', touchMoveCallback);
   canvasElement.addEventListener('touchend', touchEndCallback);
   canvasElement.addEventListener('touchcancel', touchCancelCallback);
-});
 
-document.addEventListener('keydown', (keyEvent) => {
-  if (keyEvent.key == 'a') {
-    scopeRotation.value -= 0.1;
-  } else if (keyEvent.key == 'd') {
-    scopeRotation.value += 0.1;
-  }
+  document.addEventListener('keydown', (keyEvent) => {
+    if (keyEvent.code == 'KeyW') {
+      keyPressedW.value = true;
+    } else if (keyEvent.code == 'KeyA') {
+      keyPressedA.value = true;
+    } else if (keyEvent.code == 'KeyS') {
+      keyPressedS.value = true;
+    } else if (keyEvent.code == 'KeyD') {
+      keyPressedD.value = true;
+    }
 
-  if (keyEvent.key == 'w') {
-    scopeSize.value *= 0.9;
-  } else if (keyEvent.key == 's') {
-    scopeSize.value *= 1.1;
-  }
-
-  if (keyEvent.code == 'ArrowDown') {
-    scopeOffset.value[0] += Math.sin(scopeRotation.value) * -0.1;
-    scopeOffset.value[1] += Math.cos(scopeRotation.value) * -0.1;
-  } else if (keyEvent.key == 'ArrowUp') {
-    scopeOffset.value[0] += Math.sin(scopeRotation.value) * 0.1;
-    scopeOffset.value[1] += Math.cos(scopeRotation.value) * 0.1;
-  } else if (keyEvent.key == 'ArrowLeft') {
-    scopeOffset.value[0] += Math.cos(scopeRotation.value) * -0.1;
-    scopeOffset.value[1] += Math.sin(scopeRotation.value) * -0.1;
-  } else if (keyEvent.key == 'ArrowRight') {
-    scopeOffset.value[0] += Math.cos(scopeRotation.value) * 0.1;
-    scopeOffset.value[1] += Math.sin(scopeRotation.value) * 0.1;
-  }
-  const scopeOffsetDistance = Math.sqrt(scopeOffset.value[0] * scopeOffset.value[0] + scopeOffset.value[1] * scopeOffset.value[1]);
-  if (scopeOffsetDistance > 1) {
-    scopeOffset.value[0] /= scopeOffsetDistance;
-    scopeOffset.value[1] /= scopeOffsetDistance;
-  }
+    if (keyEvent.code == 'ArrowDown') {
+      scopeOffset.value[0] += Math.sin(scopeRotation.value) * -0.1;
+      scopeOffset.value[1] += Math.cos(scopeRotation.value) * -0.1;
+    } else if (keyEvent.key == 'ArrowUp') {
+      scopeOffset.value[0] += Math.sin(scopeRotation.value) * 0.1;
+      scopeOffset.value[1] += Math.cos(scopeRotation.value) * 0.1;
+    } else if (keyEvent.key == 'ArrowLeft') {
+      scopeOffset.value[0] += Math.cos(scopeRotation.value) * -0.1;
+      scopeOffset.value[1] += Math.sin(scopeRotation.value) * -0.1;
+    } else if (keyEvent.key == 'ArrowRight') {
+      scopeOffset.value[0] += Math.cos(scopeRotation.value) * 0.1;
+      scopeOffset.value[1] += Math.sin(scopeRotation.value) * 0.1;
+    }
+    const scopeOffsetDistance = Math.sqrt(scopeOffset.value[0] * scopeOffset.value[0] + scopeOffset.value[1] * scopeOffset.value[1]);
+    if (scopeOffsetDistance > 1) {
+      scopeOffset.value[0] /= scopeOffsetDistance;
+      scopeOffset.value[1] /= scopeOffsetDistance;
+    }
+  });
+  document.addEventListener('keyup', (keyEvent) => {
+    if (keyEvent.code == 'KeyW') {
+      keyPressedW.value = false;
+    } else if (keyEvent.code == 'KeyA') {
+      keyPressedA.value = false;
+    } else if (keyEvent.code == 'KeyS') {
+      keyPressedS.value = false;
+    } else if (keyEvent.code == 'KeyD') {
+      keyPressedD.value = false;
+    }
+  });
 });
 
 </script>
