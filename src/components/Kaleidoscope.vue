@@ -10,6 +10,7 @@ const facingMode = ref('unknown');
 const scopeRotation = ref(0.0);
 const scopeSize = ref(0.5);
 const scopeOffset = ref([0.0, 0.0]);
+const scopeOffsetVel = ref([0.0, 0.0]);
 const scopeSizeVel = ref(0.0);
 const scopeRotationVel = ref(0.0);
 const isUserPressing = ref(false);
@@ -17,6 +18,10 @@ const keyPressedW = ref(false);
 const keyPressedA = ref(false);
 const keyPressedS = ref(false);
 const keyPressedD = ref(false);
+const keyPressedI = ref(false);
+const keyPressedJ = ref(false);
+const keyPressedK = ref(false);
+const keyPressedL = ref(false);
 const canvas = useTemplateRef('canvas');
 
 async function main() {
@@ -386,6 +391,32 @@ async function main() {
     } else if (keyPressedS.value) {
       scopeSizeVel.value -= 0.0002;
     }
+    if (keyPressedI.value && keyPressedK.value) {
+      // Do nothing
+    } else if (keyPressedI.value) {
+      scopeOffsetVel.value[0] -= 0.0002 / scopeSize.value;
+    } else if (keyPressedK.value) {
+      scopeOffsetVel.value[0] += 0.0002 / scopeSize.value;
+    }
+    if (keyPressedJ.value && keyPressedL.value) {
+      // Do nothing
+    } else if (keyPressedJ.value) {
+      scopeOffsetVel.value[1] += 0.0002 / scopeSize.value;
+    } else if (keyPressedL.value) {
+      scopeOffsetVel.value[1] -= 0.0002 / scopeSize.value;
+    }
+
+    let scopeRotationOffset = 0;
+    if (props.scopeShape === 0) {
+      scopeRotationOffset = Math.PI / 3;
+    } else if (props.scopeShape === 2) {
+      scopeRotationOffset = -Math.PI / 2;
+    } else if (props.scopeShape === 3) {
+      scopeRotationOffset = -Math.PI / 2;
+    }
+
+    scopeOffset.value[0] += Math.sin(-scopeRotation.value - scopeRotationOffset) * scopeOffsetVel.value[0] - Math.cos(-scopeRotation.value - scopeRotationOffset) * scopeOffsetVel.value[1];
+    scopeOffset.value[1] += Math.cos(-scopeRotation.value - scopeRotationOffset) * scopeOffsetVel.value[0] + Math.sin(-scopeRotation.value - scopeRotationOffset) * scopeOffsetVel.value[1];
 
     if (props.scopeAutoRotationVelocity !== 0) {
       scopeRotationVel.value = props.scopeAutoRotationVelocity / 25;
@@ -403,19 +434,13 @@ async function main() {
         scopeSize.value += (Math.pow(0.5, 7) - scopeSize.value) / 10;
       }
     }
+    scopeOffsetVel.value[0] *= 0.95;
+    scopeOffsetVel.value[1] *= 0.95;
 
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, camera);
     gl.uniform2f(dataDimensionsBind, camera.videoWidth, camera.videoHeight);
     gl.uniform1i(dataIsFacingUserBind, facingMode.value === 'user' ? 1 : 0);
     gl.uniform1i(scopeShapeBind, props.scopeShape);
-    let scopeRotationOffset = 0;
-    if (props.scopeShape === 0) {
-      scopeRotationOffset = Math.PI / 3;
-    } else if (props.scopeShape === 2) {
-      scopeRotationOffset = -Math.PI / 2;
-    } else if (props.scopeShape === 3) {
-      scopeRotationOffset = -Math.PI / 2;
-    }
     gl.uniform1f(scopeRotationBind, scopeRotation.value + scopeRotationOffset);
     gl.uniform1f(scopeSizeBind, scopeSize.value);
     gl.uniform2f(scopeOffsetBind, scopeOffset.value[0], scopeOffset.value[1]);
@@ -590,25 +615,14 @@ onMounted(() => {
       keyPressedS.value = true;
     } else if (keyEvent.code == 'KeyD') {
       keyPressedD.value = true;
-    }
-
-    if (keyEvent.code == 'ArrowDown') {
-      scopeOffset.value[0] += Math.sin(scopeRotation.value) * -0.1;
-      scopeOffset.value[1] += Math.cos(scopeRotation.value) * -0.1;
-    } else if (keyEvent.key == 'ArrowUp') {
-      scopeOffset.value[0] += Math.sin(scopeRotation.value) * 0.1;
-      scopeOffset.value[1] += Math.cos(scopeRotation.value) * 0.1;
-    } else if (keyEvent.key == 'ArrowLeft') {
-      scopeOffset.value[0] += Math.cos(scopeRotation.value) * -0.1;
-      scopeOffset.value[1] += Math.sin(scopeRotation.value) * -0.1;
-    } else if (keyEvent.key == 'ArrowRight') {
-      scopeOffset.value[0] += Math.cos(scopeRotation.value) * 0.1;
-      scopeOffset.value[1] += Math.sin(scopeRotation.value) * 0.1;
-    }
-    const scopeOffsetDistance = Math.sqrt(scopeOffset.value[0] * scopeOffset.value[0] + scopeOffset.value[1] * scopeOffset.value[1]);
-    if (scopeOffsetDistance > 1) {
-      scopeOffset.value[0] /= scopeOffsetDistance;
-      scopeOffset.value[1] /= scopeOffsetDistance;
+    } else if (keyEvent.code == 'KeyI') {
+      keyPressedI.value = true;
+    } else if (keyEvent.code == 'KeyJ') {
+      keyPressedJ.value = true;
+    } else if (keyEvent.code == 'KeyK') {
+      keyPressedK.value = true;
+    } else if (keyEvent.code == 'KeyL') {
+      keyPressedL.value = true;
     }
   });
   document.addEventListener('keyup', (keyEvent) => {
@@ -620,6 +634,14 @@ onMounted(() => {
       keyPressedS.value = false;
     } else if (keyEvent.code == 'KeyD') {
       keyPressedD.value = false;
+    } else if (keyEvent.code == 'KeyI') {
+      keyPressedI.value = false;
+    } else if (keyEvent.code == 'KeyJ') {
+      keyPressedJ.value = false;
+    } else if (keyEvent.code == 'KeyK') {
+      keyPressedK.value = false;
+    } else if (keyEvent.code == 'KeyL') {
+      keyPressedL.value = false;
     }
   });
 });
