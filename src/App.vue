@@ -3,6 +3,7 @@ import Kaleidoscope from './components/Kaleidoscope.vue';
 import SegmentedControl, { Option } from './components/SegmentedControl.vue';
 import { ref } from 'vue';
 import SteeringControl from './components/SteeringControl.vue';
+import { ScopeShape } from './scopeShape.ts';
 
 const options: Option[] = [
   {
@@ -23,7 +24,7 @@ const options: Option[] = [
   }
 ];
 
-const selectedIndex = ref(0);
+const selectedIndex = ref(ScopeShape.Equilateral);
 const scopeAutoRotationVelocity = ref(0);
 function updateSelectedIndex (value: number) {
   selectedIndex.value = value;

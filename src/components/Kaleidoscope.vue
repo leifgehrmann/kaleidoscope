@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import {ref, onMounted, useTemplateRef} from 'vue';
+import { ScopeShape } from '../scopeShape.ts';
 
 const props = defineProps<{
-  scopeShape: number, // Todo replace with enum
+  scopeShape: ScopeShape,
   scopeAutoRotationVelocity: number
 }>();
 
@@ -304,13 +305,13 @@ async function main() {
           vec2 scopeOrigin = vec2(0.0, 0.0);
           float scopeDiameterRatio = sqrt(2.0);
           vec2 d = rotate2d(scopeOffset, 0.0);
-          if (scopeShape == 0) {
+          if (scopeShape == ${ScopeShape.Equilateral}) {
             k = equilateral(k, scopeSize, scopeRotation, d);
             scopeDiameterRatio = 1.0;
-          } else if (scopeShape == 1) {
+          } else if (scopeShape == ${ScopeShape.Square}) {
             k = square(k, scopeSize, scopeRotation, d);
             scopeDiameterRatio = sqrt(2.0);
-          } else if (scopeShape == 2) {
+          } else if (scopeShape == ${ScopeShape.Isosceles}) {
             k = isosceles(k, scopeSize, scopeRotation, d);
           } else {
             scopeDiameterRatio = 1.0;
@@ -407,11 +408,11 @@ async function main() {
     }
 
     let scopeRotationOffset = 0;
-    if (props.scopeShape === 0) {
+    if (props.scopeShape === ScopeShape.Equilateral) {
       scopeRotationOffset = Math.PI / 3;
-    } else if (props.scopeShape === 2) {
+    } else if (props.scopeShape === ScopeShape.Isosceles) {
       scopeRotationOffset = -Math.PI / 2;
-    } else if (props.scopeShape === 3) {
+    } else if (props.scopeShape === ScopeShape.Scalene) {
       scopeRotationOffset = -Math.PI / 2;
     }
 
