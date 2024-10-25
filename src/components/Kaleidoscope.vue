@@ -36,17 +36,17 @@ async function main() {
     stream = await navigator.mediaDevices.getUserMedia({video: { facingMode: { exact: 'environment'} }, audio: false});
     facingMode.value = stream.getVideoTracks()[0]?.getSettings().facingMode ?? 'user';
   } catch (e) {
-    console.log('Failed to get environment camera. Trying any camera, under the assumption it is a user-facing camera', e);
+    console.info('Failed to get environment camera. Trying any camera, under the assumption it is a user-facing camera', e);
     try {
       stream = await navigator.mediaDevices.getUserMedia({video: true, audio: false});
       facingMode.value = stream.getVideoTracks()[0]?.getSettings().facingMode ?? 'user';
     } catch (e2) {
       if ((e2 as Error).name === 'ConstraintNotSatisfiedError') {
-        console.log('Device has no camera', e2);
+        console.error('Device has no camera', e2);
       } else if ((e2 as Error).name === 'PermissionDeniedError') {
-        console.log('Permissions not accepted', e2);
+        console.error('Permissions not accepted', e2);
       } else {
-        console.log('Other error', e2);
+        console.error('Other error', e2);
       }
     }
   }
@@ -54,7 +54,6 @@ async function main() {
   if (stream !== null) {
     camera.srcObject = stream;
     camera.play();
-    console.log('facingMode:', facingMode);
   }
 
   // Canvas with WebGL context
