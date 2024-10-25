@@ -548,6 +548,10 @@ onMounted(() => {
   const canvasElement = canvas.value as HTMLCanvasElement;
 
   canvasElement.addEventListener('mousedown', (mouseEvent) => {
+    // Left mouse button only
+    if (mouseEvent.button !== 0) {
+      return;
+    }
     mousePrevTime = new Date().getTime();
     mousePrevPosition = {
       x: mouseEvent.clientX,

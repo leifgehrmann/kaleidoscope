@@ -58,6 +58,10 @@ function selectButtonCallback(event: Event) {
 }
 
 function mouseDownCallback(event: MouseEvent | TouchEvent) {
+  // Left mouse button only
+  if ('button' in event && event.button !== 0) {
+    return;
+  }
   const point = getPointFromEvent(event);
   const buttonIndex = getIndexOfButtonAtPoint(point);
   if (buttonIndex === null) {

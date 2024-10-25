@@ -265,6 +265,10 @@ onMounted(() => {
   });
 
   touchSurfaceElement.addEventListener('mousedown', (mouseEvent) => {
+    // Left mouse button only
+    if (mouseEvent.button !== 0) {
+      return;
+    }
     pointerStart(containerElement, mouseEvent);
   });
   window.addEventListener('mousemove', (mouseEvent) => {
