@@ -260,6 +260,7 @@ onMounted(() => {
           <button
             v-if="item !== null"
             :aria-label="item.buttonAriaLabel"
+            :title="item.buttonAriaLabel"
             type="button"
             class="
               py-2 rounded-lg
