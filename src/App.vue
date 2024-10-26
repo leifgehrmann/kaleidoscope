@@ -4,6 +4,7 @@ import SegmentedControl, { Option } from './components/SegmentedControl.vue';
 import { ref } from 'vue';
 import SteeringControl from './components/SteeringControl.vue';
 import { ScopeShape } from './scopeShape.ts';
+import Prompt from './components/Prompt.vue';
 
 const options: Option[] = [
   {
@@ -24,6 +25,7 @@ const options: Option[] = [
   }
 ];
 
+const showPrompt = ref(true);
 const selectedIndex = ref(ScopeShape.Equilateral);
 const scopeAutoRotationVelocity = ref(0);
 function updateSelectedIndex (value: number) {
@@ -34,14 +36,20 @@ function updateScopeAutoRotationVelocity(value: number) {
   scopeAutoRotationVelocity.value = value;
 }
 
+function dismissPrompt() {
+  showPrompt.value = false;
+}
+
 </script>
 
 <template>
   <Kaleidoscope
+    v-if="!showPrompt"
     :scope-shape="selectedIndex"
     :scope-auto-rotation-velocity="scopeAutoRotationVelocity"
   />
   <div
+    v-if="!showPrompt"
     class="absolute w-full flex flex-col justify-end gap-1 px-2 py-1 items-center pointer-events-none"
     style="bottom:calc(env(safe-area-inset-bottom))"
   >
@@ -54,6 +62,14 @@ function updateScopeAutoRotationVelocity(value: number) {
       :options="options"
       :selected-index="selectedIndex"
       @update:selected-index="updateSelectedIndex"
+    />
+  </div>
+  <div
+    v-if="showPrompt"
+    class="absolute left-0 top-0 h-screen w-screen flex flex-col justify-center items-center"
+  >
+    <Prompt
+      @click:enter="dismissPrompt"
     />
   </div>
 </template>
