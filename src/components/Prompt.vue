@@ -23,7 +23,7 @@ const emit = defineEmits(['click:enter']);
     "
   >
     <h1 class="text-2xl font-bold">Kaleidoscope</h1>
-    <p>Use your camera to create art from your environment with symmetry and reflections.</p>
+    <p>Use your camera to create art from your environment, with symmetry and reflections.</p>
     <div class="flex justify-end">
       <button
         class="bg-white active:bg-neutral-100 font-bold text-blue-500 rounded-lg px-4 py-1 w-fit cursor-pointer"
