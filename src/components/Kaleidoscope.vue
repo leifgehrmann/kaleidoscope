@@ -23,6 +23,7 @@ const keyPressedI = ref(false);
 const keyPressedJ = ref(false);
 const keyPressedK = ref(false);
 const keyPressedL = ref(false);
+const saveNextFrame = ref(false);
 const canvas = useTemplateRef('canvas');
 
 async function main() {
@@ -446,6 +447,17 @@ async function main() {
     gl.uniform2f(scopeOffsetBind, scopeOffset.value[0], scopeOffset.value[1]);
     gl.uniform2f(canvasDimensionsBind, canvasSize, canvasSize);
     gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+    if (saveNextFrame.value) {
+      const image = canvas
+          .toDataURL('image/jpeg', 1.0);
+      const a = document.createElement('a');
+      a.href = image;
+      a.download = 'kaleidoscope.jpg';
+      a.click();
+      saveNextFrame.value = false;
+    }
+
     requestAnimationFrame(animate);
   }
   animate();
@@ -659,6 +671,37 @@ onMounted(() => {
     class="bg-black"
     style="width:100dvw;height:100dvh;object-fit:cover"
   />
+  <button
+    aria-label="Save image"
+    title="Save image"
+    class="
+      absolute
+      mb-1
+      ml-1
+      bg-neutral-300
+      bg-opacity-50
+      dark:bg-neutral-800
+      dark:bg-opacity-70
+      shadow-lg
+      dark:shadow-none
+      backdrop-blur-xl
+      rounded-full
+      w-4 h-4
+      overflow-hidden
+      text-center
+      opacity-50
+      hover:opacity-100
+    "
+    style="
+      bottom:calc(env(safe-area-inset-bottom));
+      background-image: url('/download.svg');
+      background-position: center;
+      background-size: contain;
+    "
+    @click="saveNextFrame = true"
+  >
+    &nbsp;
+  </button>
   <video
     id="camera"
     visible="False"
