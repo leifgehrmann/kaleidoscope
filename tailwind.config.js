@@ -5,6 +5,9 @@ export default {
     './src/**/*.{js,ts,vue}',
   ],
   theme: {
+    fontFamily: {
+      sans: ['ui-rounded', 'Helvetica', 'sans-serif'],
+    },
     extend: {},
   },
   plugins: [],

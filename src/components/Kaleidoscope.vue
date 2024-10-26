@@ -656,6 +656,7 @@ onMounted(() => {
   <canvas
     id="maincanvas"
     ref="canvas"
+    class="bg-black"
     style="width:100dvw;height:100dvh;object-fit:cover"
   />
   <video
