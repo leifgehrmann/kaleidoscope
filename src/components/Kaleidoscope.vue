@@ -670,7 +670,7 @@ onMounted(() => {
       saveButtonElement.style.top = 'calc(min(100dvh - 7rem,' + at.clientY + 'px - 3px))';
     } else {
       saveButtonElement.style.left = 'calc(max(0rem, min(100dvw - 7.5rem,' + at.clientX + 'px - 7.5rem / 2.0)))';
-      saveButtonElement.style.top = 'calc(max(0rem, min(100dvh - 7rem,' + at.clientY + 'px - 3rem)))';
+      saveButtonElement.style.top = 'calc(max(0rem, min(100dvh - 7rem,' + at.clientY + 'px - 6rem)))';
     }
     saveButtonVisible.value = true;
   }
