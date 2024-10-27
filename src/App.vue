@@ -67,6 +67,7 @@ function dismissPrompt() {
   <div
     v-if="showPrompt"
     class="absolute left-0 top-0 h-screen w-screen flex flex-col justify-center items-center"
+    style="width:100dvw;height:100dvh"
   >
     <Prompt
       @click:enter="dismissPrompt"
