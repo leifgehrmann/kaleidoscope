@@ -663,10 +663,15 @@ onMounted(() => {
     }
   });
 
-  function displayContextMenu (at: Point) {
+  function displayContextMenu (at: Point, touchscreen: boolean) {
     const saveButtonElement = saveButton.value as HTMLButtonElement;
-    saveButtonElement.style.left = 'calc(min(100dvw - 6.5rem,' + at.clientX + 'px))';
-    saveButtonElement.style.top = 'calc(min(100dvh - 6.25rem,' + at.clientY + 'px))';
+    if (!touchscreen) {
+      saveButtonElement.style.left = 'calc(min(100dvw - 7.5rem,' + at.clientX + 'px + 3px))';
+      saveButtonElement.style.top = 'calc(min(100dvh - 7rem,' + at.clientY + 'px - 3px))';
+    } else {
+      saveButtonElement.style.left = 'calc(max(0rem, min(100dvw - 7.5rem,' + at.clientX + 'px - 7.5rem / 2.0)))';
+      saveButtonElement.style.top = 'calc(max(0rem, min(100dvh - 7rem,' + at.clientY + 'px - 3rem)))';
+    }
     saveButtonVisible.value = true;
   }
 
@@ -692,7 +697,7 @@ onMounted(() => {
       if (touchContextMenuDistance > 2) {
         return;
       }
-      displayContextMenu(touch);
+      displayContextMenu(touch, true);
     }, touchContextMenuDuration);
   });
   document.addEventListener('touchmove', (touchEvent) => {
@@ -727,7 +732,7 @@ onMounted(() => {
 
 
   canvasElement.addEventListener('contextmenu', function(e) {
-    displayContextMenu(e);
+    displayContextMenu(e, false);
     e.preventDefault();
   });
   document.addEventListener('mousedown', () => {
@@ -772,7 +777,6 @@ onMounted(() => {
           dark:shadow-none
           backdrop-blur-xl
           rounded-md
-          text-xs
           p-1
           px-2
           pointer-events-auto
