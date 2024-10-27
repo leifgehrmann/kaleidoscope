@@ -6,7 +6,7 @@ export default {
   ],
   theme: {
     fontFamily: {
-      sans: ['ui-rounded', 'Helvetica', 'sans-serif'],
+      sans: ['ui-rounded', 'Helvetica Neue', 'sans-serif'],
     },
     extend: {},
   },

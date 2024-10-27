@@ -25,6 +25,8 @@ const keyPressedK = ref(false);
 const keyPressedL = ref(false);
 const saveNextFrame = ref(false);
 const canvas = useTemplateRef('canvas');
+const saveButton = useTemplateRef('saveButton');
+const saveButtonVisible = ref(false);
 
 async function main() {
   // Capture webcam input using invisible `video` element
@@ -660,6 +662,80 @@ onMounted(() => {
       keyPressedL.value = false;
     }
   });
+
+  function displayContextMenu (at: Point) {
+    const saveButtonElement = saveButton.value as HTMLButtonElement;
+    saveButtonElement.style.left = 'calc(min(100dvw - 6.5rem,' + at.clientX + 'px))';
+    saveButtonElement.style.top = 'calc(min(100dvh - 6.25rem,' + at.clientY + 'px))';
+    saveButtonVisible.value = true;
+  }
+
+  const touchContextMenuDuration = 1000;
+  let touchContextMenuId = null as null | number;
+  let touchContextMenuPrev = null as null | Point;
+  let touchContextMenuDistance = 0;
+  let touchContextMenuTimeout = null as null | number;
+  canvasElement.addEventListener('touchstart', (touchEvent) => {
+    saveButtonVisible.value = false;
+    const touch = touchEvent.changedTouches[0];
+    touchContextMenuId = touch.identifier;
+    touchContextMenuDistance = 0;
+    const originalTouchContextMenuId = touchContextMenuId;
+    touchContextMenuPrev = touch;
+
+    touchContextMenuTimeout = setTimeout(() => {
+      console.log(touchContextMenuId, originalTouchContextMenuId);
+      console.log(touchContextMenuDistance);
+      if (touchContextMenuId !== originalTouchContextMenuId) {
+        return;
+      }
+      if (touchContextMenuDistance > 2) {
+        return;
+      }
+      displayContextMenu(touch);
+    }, touchContextMenuDuration);
+  });
+  document.addEventListener('touchmove', (touchEvent) => {
+    if (touchContextMenuId === null || touchContextMenuPrev == null) {
+      return;
+    }
+    const touch = getTouchById(touchEvent.changedTouches, touchContextMenuId);
+    if (touch === null) {
+      return;
+    }
+    const dx = touch.clientX - touchContextMenuPrev.clientX;
+    const dy = touch.clientY - touchContextMenuPrev.clientY;
+    const movedDistance = Math.sqrt(dx*dx + dy*dy);
+    touchContextMenuDistance += movedDistance;
+    touchContextMenuPrev = touch;
+  });
+  document.addEventListener('touchend', (touchEvent) => {
+    if (touchContextMenuId === null) {
+      return;
+    }
+    const touch = getTouchById(touchEvent.changedTouches, touchContextMenuId);
+    if (touch === null) {
+      return;
+    }
+    touchContextMenuId = null;
+    touchContextMenuPrev = null;
+    touchContextMenuDistance = 0;
+    if (touchContextMenuTimeout !== null) {
+      clearTimeout(touchContextMenuTimeout);
+    }
+  });
+
+
+  canvasElement.addEventListener('contextmenu', function(e) {
+    displayContextMenu(e);
+    e.preventDefault();
+  });
+  document.addEventListener('mousedown', () => {
+    saveButtonVisible.value = false;
+  });
+  window.addEventListener('resize', () => {
+    saveButtonVisible.value = false;
+  });
 });
 
 </script>
@@ -671,37 +747,61 @@ onMounted(() => {
     class="bg-black"
     style="width:100dvw;height:100dvh;object-fit:cover"
   />
-  <button
-    aria-label="Save image"
-    title="Save image"
-    class="
-      absolute
-      mb-1
-      ml-1
-      bg-neutral-300
-      bg-opacity-50
-      dark:bg-neutral-800
-      dark:bg-opacity-70
-      shadow-lg
-      dark:shadow-none
-      backdrop-blur-xl
-      rounded-full
-      w-4 h-4
-      overflow-hidden
-      text-center
-      opacity-50
-      hover:opacity-100
-    "
-    style="
-      bottom:calc(env(safe-area-inset-bottom));
-      background-image: url('/download.svg');
-      background-position: center;
-      background-size: contain;
-    "
-    @click="saveNextFrame = true"
+  <div
+    class="pointer-events-none absolute left-0 top-0 p-5 pb-24 overflow-hidden"
+    style="width:100dvw;height:100dvh"
   >
-    &nbsp;
-  </button>
+    <div>
+      <button
+        ref="saveButton"
+        class="
+          absolute
+          flex-nowrap
+          whitespace-nowrap
+          text-nowrap
+          flex
+          flex-row
+          items-center
+          gap-1
+          bg-neutral-200
+          bg-opacity-70
+          hover:bg-opacity-80
+          dark:bg-neutral-800
+          dark:bg-opacity-70
+          shadow-xl
+          dark:shadow-none
+          backdrop-blur-xl
+          rounded-md
+          text-xs
+          p-1
+          px-2
+          pointer-events-auto
+          cursor-pointer
+          text-black
+          dark:text-white
+        "
+        :class="{
+          'hidden': !saveButtonVisible
+        }"
+        style="left: 100%;top:100%"
+        @click="saveNextFrame = true; saveButtonVisible = false"
+        @mousedown.stop
+      >
+        <picture>
+          <source
+            srcset="/download-dark.svg"
+            media="(prefers-color-scheme: dark)"
+          >
+          <img
+            src="/download-light.svg"
+            alt="Download icon"
+            class="h-4 min-w-4"
+          >
+        </picture>
+        Save image
+      </button>
+    </div>
+  </div>
   <video
     id="camera"
     visible="False"
