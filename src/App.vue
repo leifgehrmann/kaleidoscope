@@ -67,7 +67,10 @@ function dismissPrompt() {
   <div
     v-if="showPrompt"
     class="absolute left-0 top-0 h-screen w-screen flex flex-col justify-center items-center"
-    style="width:100dvw;height:100dvh"
+    style="width:100dvw;height:100dvh;background-size: cover;"
+    :style="{
+      'background-image': `url('/kaleidoscope-${Math.ceil(Math.random() * 7)}.jpg')`
+    }"
   >
     <Prompt
       @click:enter="dismissPrompt"
