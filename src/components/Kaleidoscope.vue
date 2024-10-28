@@ -469,9 +469,7 @@ interface Point {
   clientX: number;
   clientY: number;
 }
-let mousePrevTime = new Date().getTime();
 let mousePrevPosition = null as null|{x: number, y: number};
-let mouseOriginPosition = null as null|{x: number, y: number};
 let touchId1: null|number = null;
 let touchOrigin1: null|Point = null;
 let touchPrevTime = new Date().getTime();
@@ -565,23 +563,20 @@ onMounted(() => {
     if (mouseEvent.button !== 0) {
       return;
     }
-    mousePrevTime = new Date().getTime();
     mousePrevPosition = {
       x: mouseEvent.clientX,
       y: mouseEvent.clientY,
     };
     isUserPressing.value = true;
-    mouseOriginPosition = mousePrevPosition;
     scopeRotationVel.value = 0;
     scopeSizeVel.value = 0;
   });
   document.addEventListener('mousemove', (mouseEvent) => {
-    if (mousePrevPosition === null || mouseOriginPosition === null) {
+    if (mousePrevPosition === null) {
       return;
     }
-    const deltaTime = Math.max(new Date().getTime() - mousePrevTime, 0.001);
-    const deltaX = (mouseEvent.clientX - mousePrevPosition.x) / deltaTime;
-    const deltaY = (mouseEvent.clientY - mousePrevPosition.y) / deltaTime;
+    const deltaX = (mouseEvent.clientX - mousePrevPosition.x) / 10;
+    const deltaY = (mouseEvent.clientY - mousePrevPosition.y) / 10;
 
     scopeRotation.value += deltaX / 20;
     if (Math.abs(mouseEvent.clientX - mousePrevPosition.x) > 1) {
@@ -597,20 +592,18 @@ onMounted(() => {
       scopeSizeVel.value = 0;
     }
 
-    mousePrevTime = new Date().getTime();
     mousePrevPosition = {
       x: mouseEvent.clientX,
       y: mouseEvent.clientY,
     };
   });
   document.addEventListener('mouseup', () => {
-    if (mousePrevPosition === null || mouseOriginPosition === null) {
+    if (mousePrevPosition === null) {
       return;
     }
 
     isUserPressing.value = false;
     mousePrevPosition = null;
-    mouseOriginPosition = null;
   });
 
   document.addEventListener('wheel', (wheelEvent) => {
