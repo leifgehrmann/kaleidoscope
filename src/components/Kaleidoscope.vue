@@ -61,7 +61,7 @@ async function main() {
 
   // Canvas with WebGL context
   const canvas = document.getElementById('maincanvas') as HTMLCanvasElement;
-  const canvasSize = 1024;
+  const canvasSize = Math.max(1024, window.innerWidth, window.innerHeight) * window.devicePixelRatio;
   const gl = canvas.getContext('webgl')!;
   canvas.width = canvas.height = canvasSize;
   gl.viewport(0, 0, canvas.width, canvas.height);
