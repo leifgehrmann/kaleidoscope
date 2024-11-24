@@ -25,7 +25,7 @@ const options: Option[] = [
   }
 ];
 
-const showPrompt = ref(true);
+const showPrompt = ref(false);
 const selectedIndex = ref(ScopeShape.Equilateral);
 const scopeAutoRotationVelocity = ref(0);
 function updateSelectedIndex (value: number) {

@@ -9,7 +9,7 @@ const props = defineProps<{
 
 const facingMode = ref('unknown');
 const scopeRotation = ref(0.0);
-const scopeSize = ref(0.5);
+const scopeSize = ref(0.125);
 const scopeOffset = ref([0.0, 0.0]);
 const scopeOffsetVel = ref([0.0, 0.0]);
 const scopeSizeVel = ref(0.0);
@@ -35,29 +35,29 @@ async function main() {
 
   // Ask user permission to record their camera
   let stream: MediaStream | null = null;
-  try {
-    stream = await navigator.mediaDevices.getUserMedia({video: { facingMode: { exact: 'environment'} }, audio: false});
-    facingMode.value = stream.getVideoTracks()[0]?.getSettings().facingMode ?? 'user';
-  } catch (e) {
-    console.info('Failed to get environment camera. Trying any camera, under the assumption it is a user-facing camera', e);
-    try {
-      stream = await navigator.mediaDevices.getUserMedia({video: true, audio: false});
-      facingMode.value = stream.getVideoTracks()[0]?.getSettings().facingMode ?? 'user';
-    } catch (e2) {
-      if ((e2 as Error).name === 'ConstraintNotSatisfiedError') {
-        console.error('Device has no camera', e2);
-      } else if ((e2 as Error).name === 'PermissionDeniedError') {
-        console.error('Permissions not accepted', e2);
-      } else {
-        console.error('Other error', e2);
-      }
-    }
-  }
-
-  if (stream !== null) {
-    camera.srcObject = stream;
-    camera.play();
-  }
+  // try {
+  //   stream = await navigator.mediaDevices.getUserMedia({video: { facingMode: { exact: 'environment'} }, audio: false});
+  //   facingMode.value = stream.getVideoTracks()[0]?.getSettings().facingMode ?? 'user';
+  // } catch (e) {
+  //   console.info('Failed to get environment camera. Trying any camera, under the assumption it is a user-facing camera', e);
+  //   try {
+  //     stream = await navigator.mediaDevices.getUserMedia({video: true, audio: false});
+  //     facingMode.value = stream.getVideoTracks()[0]?.getSettings().facingMode ?? 'user';
+  //   } catch (e2) {
+  //     if ((e2 as Error).name === 'ConstraintNotSatisfiedError') {
+  //       console.error('Device has no camera', e2);
+  //     } else if ((e2 as Error).name === 'PermissionDeniedError') {
+  //       console.error('Permissions not accepted', e2);
+  //     } else {
+  //       console.error('Other error', e2);
+  //     }
+  //   }
+  // }
+  //
+  // if (stream !== null) {
+  //   camera.srcObject = stream;
+  //   camera.play();
+  // }
 
   // Canvas with WebGL context
   const canvas = document.getElementById('maincanvas') as HTMLCanvasElement;
@@ -173,10 +173,10 @@ async function main() {
 
         u = rotate2d(u,kRot);
         u /= kLength;
-        u /= sqrt(3.0) / 2.0;
+        // u /= sqrt(3.0) / 2.0;
 
-        u += vec2(0.5, 0.5);
-        u.y -= (0.25) * sqrt(3.0) / 2.0;
+        // u += vec2(0.5, 0.5);
+        // u.y -= (0.25) * sqrt(3.0) / 2.0;
 
         u += offset;
 
@@ -202,9 +202,9 @@ async function main() {
         k.y = sin(theta) * distance;
 
         // We want the center of the equilateral triangle to be the center of the image.
-        k *= cos(radians(30.0));
-        k.x += (((1.0 - sqrt(3.0) / 2.0)) / 2.00);
-        k.y += (0.254); // I don't know what number this actually is meant to be... But it works.
+        // k *= cos(radians(30.0));
+        // k.x += (((1.0 - sqrt(3.0) / 2.0)) / 2.00);
+        // k.y += (0.254); // I don't know what number this actually is meant to be... But it works.
 
         return k;
       }
@@ -239,7 +239,7 @@ async function main() {
           theta = mod(theta, deg45);
         }
 
-        k.x = cos(theta) * distance;
+        k.x = -cos(theta) * distance + 1.0;
         k.y = sin(theta) * distance;
 
         return k;
@@ -276,13 +276,13 @@ async function main() {
           theta = deg30 - mod(theta, deg30);
         }
 
-        k.x = cos(theta) * distance;
-        k.y = sin(theta) * distance;
+        k.x = sin(theta) * distance;
+        k.y = -cos(theta) * distance + 1.0;
 
         // We want the center of the triangle to be the center of the image.
-        k *= sqrt(3.0) / 2.0;
-        k.x += (((1.0 - sqrt(3.0) / 2.0)) / 2.0);
-        k.y += (0.25);
+        // k *= sqrt(3.0) / 2.0;
+        // k.x += (((1.0 - sqrt(3.0) / 2.0)) / 2.0);
+        // k.y += (0.25);
 
         return k;
       }
@@ -301,7 +301,7 @@ async function main() {
 
           // Position in kaleidoscope space
           // In opengl, y-coordinate is flipped
-          vec2 u = vec2(fragCoord.x,1.0-fragCoord.y);
+          vec2 u = vec2(fragCoord.x,fragCoord.y);
           vec2 k = u;
 
           vec2 scopeOrigin = vec2(0.0, 0.0);
@@ -334,10 +334,10 @@ async function main() {
           i.x += dataDimensions.x / 2.0;
           i.y += dataDimensions.y / 2.0;
 
-          gl_FragColor=texture2D(data,vec2(i.x, i.y)/vec2(dataDimensions.x,dataDimensions.y)).xyzw;
+          // gl_FragColor=texture2D(data,vec2(i.x, i.y)/vec2(dataDimensions.x,dataDimensions.y)).xyzw;
 
           // For debugging the kaleidoscope value
-          // gl_FragColor=vec4(k.x, k.y, 0.0, 1.0);
+          gl_FragColor=vec4(k.x, k.y, 0.0, 1.0);
       }`);
   gl.compileShader(fshader);
 
@@ -411,9 +411,9 @@ async function main() {
 
     let scopeRotationOffset = 0;
     if (props.scopeShape === ScopeShape.Equilateral) {
-      scopeRotationOffset = Math.PI / 3;
+      // scopeRotationOffset = Math.PI / 3;
     } else if (props.scopeShape === ScopeShape.Isosceles) {
-      scopeRotationOffset = -Math.PI / 2;
+      // scopeRotationOffset = -Math.PI / 2;
     } else if (props.scopeShape === ScopeShape.Scalene) {
       scopeRotationOffset = -Math.PI / 2;
     }
@@ -440,8 +440,8 @@ async function main() {
     scopeOffsetVel.value[0] *= 0.95;
     scopeOffsetVel.value[1] *= 0.95;
 
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, camera);
-    gl.uniform2f(dataDimensionsBind, camera.videoWidth, camera.videoHeight);
+    // gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, camera);
+    gl.uniform2f(dataDimensionsBind, 100, 100);
     gl.uniform1i(dataIsFacingUserBind, facingMode.value === 'user' ? 1 : 0);
     gl.uniform1i(scopeShapeBind, props.scopeShape);
     gl.uniform1f(scopeRotationBind, scopeRotation.value + scopeRotationOffset);
@@ -452,10 +452,10 @@ async function main() {
 
     if (saveNextFrame.value) {
       const image = canvas
-          .toDataURL('image/jpeg', 1.0);
+          .toDataURL('image/png', 1.0);
       const a = document.createElement('a');
       a.href = image;
-      a.download = 'kaleidoscope.jpg';
+      a.download = 'kaleidoscope.png';
       a.click();
       saveNextFrame.value = false;
     }
@@ -739,12 +739,21 @@ onMounted(() => {
 </script>
 
 <template>
-  <canvas
-    id="maincanvas"
-    ref="canvas"
-    class="bg-black"
-    style="width:100dvw;height:100dvh;object-fit:cover"
-  />
+<!--  <canvas-->
+<!--    id="maincanvas"-->
+<!--    ref="canvas"-->
+<!--    class="bg-black"-->
+<!--    style="width:100dvw;height:100dvh;object-fit:cover"-->
+<!--  />-->
+    <canvas
+      id="maincanvas"
+      ref="canvas"
+      style="width:100dvw;height:100dvh;object-fit:contain; object-position: top"
+    />
+    <div class="absolute left-0 top-0 w-screen border-[0.25px] border-white rounded-full aspect-square flex justify-center items-center pointer-events-none">
+      <div class="h-[1px] w-[1px] border-[0.25px] border-white"></div>
+    </div>
+    <div class="absolute left-1/2 top-0 h-screen w-[1px] border-[0.25px] border-white/10"></div>
   <div
     class="pointer-events-none absolute left-0 top-0 p-5 pb-24 overflow-hidden"
     style="width:100dvw;height:100dvh"
