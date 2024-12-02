@@ -26,6 +26,7 @@ const options: Option[] = [
 ];
 
 const showPrompt = ref(true);
+const showControls = ref(true);
 const selectedIndex = ref(ScopeShape.Equilateral);
 const scopeAutoRotationVelocity = ref(0);
 function updateSelectedIndex (value: number) {
@@ -40,6 +41,16 @@ function dismissPrompt() {
   showPrompt.value = false;
 }
 
+window.addEventListener('keypress', (keyEvent) => {
+  if (keyEvent.code != 'KeyH') {
+    return;
+  }
+  if (showPrompt.value) {
+    return;
+  }
+  showControls.value = !showControls.value;
+});
+
 </script>
 
 <template>
@@ -49,7 +60,7 @@ function dismissPrompt() {
     :scope-auto-rotation-velocity="scopeAutoRotationVelocity"
   />
   <div
-    v-if="!showPrompt"
+    v-if="!showPrompt && showControls"
     class="absolute w-full flex flex-col justify-end gap-1 px-2 py-1 items-center pointer-events-none"
     style="bottom:calc(env(safe-area-inset-bottom))"
   >

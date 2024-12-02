@@ -16,6 +16,7 @@ You can find a demo at [kaleidoscope.leifgehrmann.com](https://kaleidoscope.leif
 
 * `WASD` to control the zoom and rotation.
 * `IJKL` to control the "offset" (warning, it'll get really weird)
+* `H` to hide the controls.
 * `Tab + Space + Left/Right` to switch between kaleidoscope shapes. 
 
 ## Examples
