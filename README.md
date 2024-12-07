@@ -15,9 +15,11 @@ You can find a demo at [kaleidoscope.leifgehrmann.com](https://kaleidoscope.leif
 ### Keyboard controls
 
 * `WASD` to control the zoom and rotation.
+* `SHIFT/ALT` to speed up or slow down rotation, respectively.
 * `IJKL` to control the "offset" (warning, it'll get really weird)
-* `H` to hide the controls.
-* `Tab + Space + Left/Right` to switch between kaleidoscope shapes. 
+* `-+` to control the camera's zooms.
+* `H` to hide the on-screen controls.
+* `1234` to switch between kaleidoscope shapes.
 
 ## Examples
 

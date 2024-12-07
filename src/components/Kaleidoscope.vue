@@ -8,6 +8,7 @@ const props = defineProps<{
 }>();
 
 const facingMode = ref('unknown');
+const cameraZoom = ref(1);
 const scopeRotation = ref(0.0);
 const scopeSize = ref(0.5);
 const scopeOffset = ref([0.0, 0.0]);
@@ -15,6 +16,8 @@ const scopeOffsetVel = ref([0.0, 0.0]);
 const scopeSizeVel = ref(0.0);
 const scopeRotationVel = ref(0.0);
 const isUserPressing = ref(false);
+const keyPressedShift = ref(false);
+const keyPressedAlt = ref(false);
 const keyPressedW = ref(false);
 const keyPressedA = ref(false);
 const keyPressedS = ref(false);
@@ -23,6 +26,8 @@ const keyPressedI = ref(false);
 const keyPressedJ = ref(false);
 const keyPressedK = ref(false);
 const keyPressedL = ref(false);
+const keyPressedMinus = ref(false);
+const keyPressedPlus = ref(false);
 const saveNextFrame = ref(false);
 const canvas = useTemplateRef('canvas');
 const saveButton = useTemplateRef('saveButton');
@@ -83,6 +88,7 @@ async function main() {
       uniform sampler2D data;
       uniform vec2 dataDimensions;
       uniform int dataIsFacingUser;
+      uniform float dataZoom;
       uniform vec2 canvasDimensions;
       uniform int scopeShape;
       uniform float scopeRotation;
@@ -331,6 +337,7 @@ async function main() {
           // y-axis is flipped because of openGL coordinate space
           i.y = - (-dataWindowSize / 2.0 + k.y * dataWindowSize);
           i = rotate2d(i, scopeRotation * (dataIsFacingUser == 1 ? -1.0 : 1.0));
+          i /= dataZoom;
           i.x += dataDimensions.x / 2.0;
           i.y += dataDimensions.y / 2.0;
 
@@ -371,11 +378,22 @@ async function main() {
   // Bind camera dimensions to the fragment shader
   const dataDimensionsBind = gl.getUniformLocation(program, 'dataDimensions');
   const dataIsFacingUserBind = gl.getUniformLocation(program, 'dataIsFacingUser');
+  const dataZoomBind = gl.getUniformLocation(program, 'dataZoom');
   const canvasDimensionsBind = gl.getUniformLocation(program, 'canvasDimensions');
   const scopeShapeBind = gl.getUniformLocation(program, 'scopeShape');
   const scopeRotationBind = gl.getUniformLocation(program, 'scopeRotation');
   const scopeSizeBind = gl.getUniformLocation(program, 'scopeSize');
   const scopeOffsetBind = gl.getUniformLocation(program, 'scopeOffset');
+
+  function fastNormalSlow(fast: number, normal: number, slow: number) {
+    if (keyPressedShift.value) {
+      return fast;
+    }
+    if (keyPressedAlt.value) {
+      return slow;
+    }
+    return normal;
+  }
 
   // Repeatedly pull camera data and render
   function animate(){
@@ -383,16 +401,16 @@ async function main() {
     if (keyPressedA.value && keyPressedD.value) {
       // Do nothing
     } else if (keyPressedA.value) {
-      scopeRotationVel.value -= 0.0002;
+      scopeRotationVel.value -= fastNormalSlow(0.001, 0.0002, 0.00005);
     } else if (keyPressedD.value) {
-      scopeRotationVel.value += 0.0002;
+      scopeRotationVel.value += fastNormalSlow(0.001, 0.0002, 0.00005);
     }
     if (keyPressedW.value && keyPressedS.value) {
       // Do nothing
     } else if (keyPressedW.value) {
-      scopeSizeVel.value += 0.0002;
+      scopeSizeVel.value += fastNormalSlow(0.001, 0.0002, 0.00005);
     } else if (keyPressedS.value) {
-      scopeSizeVel.value -= 0.0002;
+      scopeSizeVel.value -= fastNormalSlow(0.001, 0.0002, 0.00005);
     }
     if (keyPressedI.value && keyPressedK.value) {
       // Do nothing
@@ -407,6 +425,13 @@ async function main() {
       scopeOffsetVel.value[1] += 0.0002 / scopeSize.value;
     } else if (keyPressedL.value) {
       scopeOffsetVel.value[1] -= 0.0002 / scopeSize.value;
+    }
+    if (keyPressedMinus.value && keyPressedPlus.value) {
+      // Do nothing
+    } else if (keyPressedMinus.value) {
+      cameraZoom.value = Math.max(1, cameraZoom.value * 0.95);
+    } else if (keyPressedPlus.value) {
+      cameraZoom.value = Math.min(10, cameraZoom.value * 1.05);
     }
 
     let scopeRotationOffset = 0;
@@ -443,6 +468,7 @@ async function main() {
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, camera);
     gl.uniform2f(dataDimensionsBind, camera.videoWidth, camera.videoHeight);
     gl.uniform1i(dataIsFacingUserBind, facingMode.value === 'user' ? 1 : 0);
+    gl.uniform1f(dataZoomBind, cameraZoom.value);
     gl.uniform1i(scopeShapeBind, props.scopeShape);
     gl.uniform1f(scopeRotationBind, scopeRotation.value + scopeRotationOffset);
     gl.uniform1f(scopeSizeBind, scopeSize.value);
@@ -634,6 +660,14 @@ onMounted(() => {
       keyPressedK.value = true;
     } else if (keyEvent.code == 'KeyL') {
       keyPressedL.value = true;
+    } else if (keyEvent.code == 'Equal') {
+      keyPressedPlus.value = true;
+    } else if (keyEvent.code == 'Minus') {
+      keyPressedMinus.value = true;
+    } else if (keyEvent.code == 'ShiftLeft' || keyEvent.code == 'ShiftRight') {
+      keyPressedShift.value = true;
+    } else if (keyEvent.code == 'AltLeft' || keyEvent.code == 'AltRight') {
+      keyPressedAlt.value = true;
     }
   });
   document.addEventListener('keyup', (keyEvent) => {
@@ -653,6 +687,14 @@ onMounted(() => {
       keyPressedK.value = false;
     } else if (keyEvent.code == 'KeyL') {
       keyPressedL.value = false;
+    } else if (keyEvent.code == 'Equal') {
+      keyPressedPlus.value = false;
+    } else if (keyEvent.code == 'Minus') {
+      keyPressedMinus.value = false;
+    } else if (keyEvent.code == 'ShiftLeft' || keyEvent.code == 'ShiftRight') {
+      keyPressedShift.value = false;
+    } else if (keyEvent.code == 'AltLeft' || keyEvent.code == 'AltRight') {
+      keyPressedAlt.value = false;
     }
   });
 
