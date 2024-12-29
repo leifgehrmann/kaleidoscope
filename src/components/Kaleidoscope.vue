@@ -443,8 +443,14 @@ async function main() {
       scopeRotationOffset = -Math.PI / 2;
     }
 
-    scopeOffset.value[0] += Math.sin(-scopeRotation.value - scopeRotationOffset) * scopeOffsetVel.value[0] - Math.cos(-scopeRotation.value - scopeRotationOffset) * scopeOffsetVel.value[1];
-    scopeOffset.value[1] += Math.cos(-scopeRotation.value - scopeRotationOffset) * scopeOffsetVel.value[0] + Math.sin(-scopeRotation.value - scopeRotationOffset) * scopeOffsetVel.value[1];
+    // A hack to fix an issue with the scope offset calculations for a specific shape...
+    if (props.scopeShape === ScopeShape.Scalene) {
+      scopeOffset.value[0] += Math.sin(-scopeRotation.value - scopeRotationOffset - Math.PI / 3) * scopeOffsetVel.value[0] - Math.cos(-scopeRotation.value - scopeRotationOffset - Math.PI / 3) * scopeOffsetVel.value[1];
+      scopeOffset.value[1] += Math.cos(-scopeRotation.value - scopeRotationOffset - Math.PI / 3) * scopeOffsetVel.value[0] + Math.sin(-scopeRotation.value - scopeRotationOffset - Math.PI / 3) * scopeOffsetVel.value[1];
+    } else {
+      scopeOffset.value[0] += Math.sin(-scopeRotation.value - scopeRotationOffset) * scopeOffsetVel.value[0] - Math.cos(-scopeRotation.value - scopeRotationOffset) * scopeOffsetVel.value[1];
+      scopeOffset.value[1] += Math.cos(-scopeRotation.value - scopeRotationOffset) * scopeOffsetVel.value[0] + Math.sin(-scopeRotation.value - scopeRotationOffset) * scopeOffsetVel.value[1];
+    }
 
     if (props.scopeAutoRotationVelocity !== 0) {
       scopeRotationVel.value = props.scopeAutoRotationVelocity / 25;
