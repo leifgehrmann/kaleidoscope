@@ -74,15 +74,46 @@ window.addEventListener('keypress', (keyEvent) => {
     style="bottom:calc(env(safe-area-inset-bottom))"
   >
     <SteeringControl
-      class="w-full max-w-48 h-6"
+      class="w-full max-w-56 h-6"
       @update:velocity="updateScopeAutoRotationVelocity"
     />
-    <SegmentedControl
-      class="w-full max-w-48 pointer-events-auto"
-      :options="options"
-      :selected-index="selectedIndex"
-      @update:selected-index="updateSelectedIndex"
-    />
+    <div
+      class="
+      w-full max-w-48 flex flex-row gap-2
+      items-center
+      p-1
+      relative
+      bg-neutral-300
+      bg-opacity-50
+      dark:bg-neutral-800
+      dark:bg-opacity-70
+      shadow-lg
+      dark:shadow-none
+      backdrop-blur-xl
+      rounded-xl
+      text-sm
+      overflow-hidden
+      "
+    >
+      <button
+        class="w-9 flex justify-center items-center cursor-pointer"
+      ><img src="/public/equilateral.svg"></button>
+      <div
+        class="bg-white/50 rounded-full w-0.5 h-6"
+      ></div>
+      <SegmentedControl
+        class="w-full pointer-events-auto"
+        :options="options"
+        :selected-index="selectedIndex"
+        @update:selected-index="updateSelectedIndex"
+      />
+      <div
+          class="bg-white/40 rounded-full w-0.5 h-6"
+      ></div>
+      <button
+          class="w-9 flex justify-center items-center cursor-pointer"
+      ><img src="/public/equilateral.svg"></button>
+    </div>
   </div>
   <div
     v-if="showPrompt"
