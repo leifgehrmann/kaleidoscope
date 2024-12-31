@@ -10,6 +10,7 @@ const showInformation = ref(false);
 <template>
   <div
     class="
+      m-1
       flex
       flex-col
       items-center
@@ -23,13 +24,11 @@ const showInformation = ref(false);
       p-4
       py-8
       shadow-xl
-      w-[20rem]
-      md:w-[24rem]
-      min-w-72
+      sm:w-[24rem]
+      sm:min-w-72
       pointer-events-auto
       ring-1
       ring-neutral-800/10
-      transition-all
       select-text
     "
   >
@@ -81,6 +80,6 @@ const showInformation = ref(false);
 }
 
 .list-item p {
-  @apply max-w-44 md:max-w-52 select-text text-sm;
+  @apply max-w-44 sm:max-w-52 select-text text-sm;
 }
 </style>

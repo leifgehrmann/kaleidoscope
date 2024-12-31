@@ -26,11 +26,8 @@ html {
   @apply bg-black text-black;
   font-size: 16px;
   line-height: 1.5;
-  /*transition-property: font-size;*/
-  /*transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);*/
-  /*transition-duration: 150ms;*/
 }
-@media (min-width: 38em) {
+@media (min-width: 640px) {
   html {
     font-size: 20px;
   }

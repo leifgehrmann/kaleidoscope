@@ -86,7 +86,7 @@ window.addEventListener('keypress', (keyEvent) => {
   </div>
   <div
     v-if="showPrompt"
-    class="min-h-screen w-screen flex flex-col justify-center items-center"
+    class="absolute left-0 top-0 h-screen w-screen flex flex-col justify-center items-center overflow-auto"
     style="width:100dvw;height:100dvh;background-size: cover;"
     :style="{
       'background-image': `url('/kaleidoscope-${Math.ceil(Math.random() * 10)}.jpg')`
