@@ -10,74 +10,107 @@ const showInformation = ref(false);
 <template>
   <div
     class="
+      m-1
       flex
       flex-col
-      gap-2
+      items-center
+      gap-6
       bg-white
       dark:bg-neutral-800
-      bg-opacity-80
-      dark:bg-opacity-70
+      bg-opacity-100
+      dark:bg-opacity-90
       backdrop-blur-xl
       rounded-3xl
       p-4
+      py-8
       shadow-xl
-      max-w-72
+      sm:w-[24rem]
+      sm:min-w-72
       pointer-events-auto
       ring-1
       ring-neutral-800/10
-      transition-all
       select-text
     "
   >
-    <h1 class="text-2xl font-bold select-text">
+    <h1 class="text-3xl font-bold select-text text-center">
       Kaleidoscope
     </h1>
-    <p class="select-text">
-      Use your camera to create art from your environment.
+    <ul class="max-w-64 flex flex-col gap-6">
+      <li class="list-item">
+        <picture>
+          <source
+            srcset="/prompt-camera-dark.svg"
+            media="(prefers-color-scheme: dark)"
+          >
+          <img
+            src="/public/prompt-camera-light.svg"
+            alt="A camera icon."
+          >
+        </picture>
+        <p>Use your camera to create art from your environment.</p>
+      </li>
+      <li class="list-item">
+        <picture>
+          <source
+            srcset="/prompt-drag-dark.svg"
+            media="(prefers-color-scheme: dark)"
+          >
+          <img
+            src="/public/prompt-drag-light.svg"
+            alt="A finger dragging from right to left."
+          >
+        </picture>
+        <p>
+          Drag the screen to rotate and zoom the kaleido&shy;scope.
+        </p>
+      </li>
+      <li class="list-item">
+        <picture>
+          <source
+            srcset="/prompt-shapes-dark.svg"
+            media="(prefers-color-scheme: dark)"
+          >
+          <img
+            src="/public/prompt-shapes-light.svg"
+            alt="4 geometric shapes."
+          >
+        </picture>
+        <p>
+          Switch mirror arrangements to create different patterns.<br>
+          <!--<a
+            href="https://github.com/leifgehrmann/kaleidoscope"
+            target="_blank"
+            class="text-blue-600 dark:text-blue-300 select-text"
+          >Learn more...</a>-->
+        </p>
+      </li>
+    </ul>
+    <p class="max-w-64 select-text text-center text-black/60 dark:text-white/60 text-xs">
+      This website does not collect any data.<br>Additional information can be found on
+      <a
+        href="https://github.com/leifgehrmann/kaleidoscope"
+        class="text-blue-600/80 dark:text-blue-300/80 select-text"
+      >GitHub</a>.
     </p>
-    <div
-      class="flex gap-4"
-      :class="{
-        'justify-between': !showInformation,
-        'justify-end': showInformation,
-      }"
+    <button
+      class="bg-blue-600 active:bg-blue-500 dark:bg-blue-500 dark:active:bg-blue-400 font-bold text-white rounded-lg px-4 py-2 cursor-pointer w-full max-w-52"
+      @click="emit('click:enter')"
     >
-      <button
-        v-if="!showInformation"
-        class="
-          bg-white/0 text-black/70 active:text-black/60 dark:text-white/70 dark:active:text-white/60
-          rounded-lg px-0 py-1 w-fit
-        "
-        @click="showInformation = !showInformation"
-      >
-        More information…
-      </button>
-      <button
-        class="bg-blue-500 active:bg-blue-400 font-bold text-white rounded-lg px-4 py-1 w-fit cursor-pointer"
-        @click="emit('click:enter')"
-      >
-        Play
-      </button>
-    </div>
-    <Transition
-      enter-active-class="transition-[opacity_max-height] duration-500"
-      enter-from-class="opacity-0 max-h-0"
-      enter-to-class="opacity-100 max-h-40"
-    >
-      <p
-        v-if="showInformation"
-        class="pt-2 text-xs overflow-hidden select-text"
-      >
-        This website does not collect any data. Additional information for this website, including its source code, can be found on
-        <a
-          href="https://github.com/leifgehrmann/kaleidoscope"
-          class="text-blue-600 dark:text-blue-300 select-text"
-        >GitHub</a>.
-      </p>
-    </Transition>
+      Play
+    </button>
   </div>
 </template>
 
 <style scoped>
+.list-item {
+  @apply flex gap-4 items-center;
+}
 
+.list-item img {
+  @apply w-8;
+}
+
+.list-item p {
+  @apply max-w-44 sm:max-w-52 select-text text-sm;
+}
 </style>
