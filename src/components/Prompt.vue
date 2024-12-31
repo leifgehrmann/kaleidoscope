@@ -37,36 +37,63 @@ const showInformation = ref(false);
     </h1>
     <ul class="max-w-64 flex flex-col gap-6">
       <li class="list-item">
-        <img src="/public/equilateral.svg">
+        <picture>
+          <source
+            srcset="/prompt-camera-dark.svg"
+            media="(prefers-color-scheme: dark)"
+          >
+          <img
+            src="/public/prompt-camera-light.svg"
+            alt="A camera icon."
+          >
+        </picture>
         <p>Use your camera to create art from your environment.</p>
       </li>
       <li class="list-item">
-        <img src="/public/equilateral.svg">
+        <picture>
+          <source
+            srcset="/prompt-drag-dark.svg"
+            media="(prefers-color-scheme: dark)"
+          >
+          <img
+            src="/public/prompt-drag-light.svg"
+            alt="A finger dragging from right to left."
+          >
+        </picture>
         <p>
-          Drag the screen to zoom and rotate the kaleido&shy;scope.
+          Drag the screen to rotate and zoom the kaleido&shy;scope.
         </p>
       </li>
       <li class="list-item">
-        <img src="/public/equilateral.svg">
+        <picture>
+          <source
+            srcset="/prompt-shapes-dark.svg"
+            media="(prefers-color-scheme: dark)"
+          >
+          <img
+            src="/public/prompt-shapes-light.svg"
+            alt="4 geometric shapes."
+          >
+        </picture>
         <p>
           Switch mirror arrangements to create different patterns.<br>
-          <a
+          <!--<a
             href="https://github.com/leifgehrmann/kaleidoscope"
             target="_blank"
             class="text-blue-600 dark:text-blue-300 select-text"
-          >Read more...</a>
+          >Learn more...</a>-->
         </p>
       </li>
     </ul>
-    <p class="max-w-64 select-text text-center dark:text-white/60 text-xs">
+    <p class="max-w-64 select-text text-center text-black/60 dark:text-white/60 text-xs">
       This website does not collect any data.<br>Additional information can be found on
       <a
-          href="https://github.com/leifgehrmann/kaleidoscope"
-          class="text-blue-600/80 dark:text-blue-300/80 select-text"
+        href="https://github.com/leifgehrmann/kaleidoscope"
+        class="text-blue-600/80 dark:text-blue-300/80 select-text"
       >GitHub</a>.
     </p>
     <button
-      class="bg-blue-500 active:bg-blue-400 font-bold text-white rounded-lg px-4 py-2 cursor-pointer w-full max-w-52"
+      class="bg-blue-600 active:bg-blue-500 dark:bg-blue-500 dark:active:bg-blue-400 font-bold text-white rounded-lg px-4 py-2 cursor-pointer w-full max-w-52"
       @click="emit('click:enter')"
     >
       Play
@@ -76,7 +103,11 @@ const showInformation = ref(false);
 
 <style scoped>
 .list-item {
-  @apply flex gap-6;
+  @apply flex gap-4 items-center;
+}
+
+.list-item img {
+  @apply w-8;
 }
 
 .list-item p {

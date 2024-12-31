@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="32px" height="32px" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 54.1 (76490) - https://sketchapp.com -->
+    <title>prompt-camera</title>
+    <desc>Created with Sketch.</desc>
+    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect fill="#3B82F6" x="1" y="7" width="21" height="18" rx="3"></rect>
+        <path d="M23.9400021,12.4125898 L29.4700011,8.95634043 C29.9383376,8.66363009 30.555288,8.80600326 30.8479983,9.27433979 C30.9473306,9.43327139 31,9.61691901 31,9.80433873 L31,10.6858899 L31,22.1958434 C31,22.7481282 30.5522847,23.1958434 30,23.1958434 C29.8125803,23.1958434 29.6289327,23.143174 29.4700011,23.0438418 L23.9400021,19.5875924 C23.3552394,19.2221157 23,18.5811759 23,17.8915958 L23,14.1085864 C23,13.4190063 23.3552394,12.7780665 23.9400021,12.4125898 Z" fill="#3B82F6"></path>
+    </g>
+</svg>
