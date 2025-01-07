@@ -666,9 +666,9 @@ onMounted(() => {
       keyPressedK.value = true;
     } else if (keyEvent.code == 'KeyL') {
       keyPressedL.value = true;
-    } else if (keyEvent.code == 'Equal') {
+    } else if (keyEvent.code == 'Equal' && !keyEvent.metaKey && !keyEvent.ctrlKey) {
       keyPressedPlus.value = true;
-    } else if (keyEvent.code == 'Minus') {
+    } else if (keyEvent.code == 'Minus' && !keyEvent.metaKey && !keyEvent.ctrlKey) {
       keyPressedMinus.value = true;
     } else if (keyEvent.code == 'ShiftLeft' || keyEvent.code == 'ShiftRight') {
       keyPressedShift.value = true;
