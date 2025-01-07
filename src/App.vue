@@ -79,7 +79,8 @@ window.addEventListener('keypress', (keyEvent) => {
     />
     <div
       class="
-      w-full max-w-48 flex flex-row gap-2
+      pointer-events-none
+      w-full max-w-64 flex flex-row gap-1
       items-center
       p-1
       relative
@@ -95,12 +96,6 @@ window.addEventListener('keypress', (keyEvent) => {
       overflow-hidden
       "
     >
-      <button
-        class="w-9 flex justify-center items-center cursor-pointer"
-      ><img src="/public/equilateral.svg"></button>
-      <div
-        class="bg-white/50 rounded-full w-0.5 h-6"
-      ></div>
       <SegmentedControl
         class="w-full pointer-events-auto"
         :options="options"
@@ -110,9 +105,16 @@ window.addEventListener('keypress', (keyEvent) => {
       <div
           class="bg-white/40 rounded-full w-0.5 h-6"
       ></div>
-      <button
-          class="w-9 flex justify-center items-center cursor-pointer"
-      ><img src="/public/equilateral.svg"></button>
+      <div
+        class="flex"
+      >
+        <button
+            class="w-9 flex justify-center items-center cursor-pointer dark:opacity-60"
+        ><img src="/public/circle.svg"></button>
+        <button
+            class="w-9 flex justify-center items-center cursor-pointer dark:opacity-60"
+        ><img src="/public/circle.svg"></button>
+      </div>
     </div>
   </div>
   <div
