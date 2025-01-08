@@ -43,7 +43,7 @@ const showInformation = ref(false);
             media="(prefers-color-scheme: dark)"
           >
           <img
-            src="/public/prompt-camera-light.svg"
+            src="/prompt-camera-light.svg"
             alt="A camera icon."
           >
         </picture>
@@ -56,7 +56,7 @@ const showInformation = ref(false);
             media="(prefers-color-scheme: dark)"
           >
           <img
-            src="/public/prompt-drag-light.svg"
+            src="/prompt-drag-light.svg"
             alt="A finger dragging from right to left."
           >
         </picture>
@@ -71,7 +71,7 @@ const showInformation = ref(false);
             media="(prefers-color-scheme: dark)"
           >
           <img
-            src="/public/prompt-shapes-light.svg"
+            src="/prompt-shapes-light.svg"
             alt="4 geometric shapes."
           >
         </picture>
