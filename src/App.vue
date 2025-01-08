@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import Kaleidoscope from './components/Kaleidoscope.vue';
 import SegmentedControl, { Option } from './components/SegmentedControl.vue';
-import { ref } from 'vue';
+import {onUpdated, ref, useTemplateRef} from 'vue';
 import SteeringControl from './components/SteeringControl.vue';
 import { ScopeShape } from './scopeShape.ts';
 import Prompt from './components/Prompt.vue';
+import IconButton from './components/IconButton.vue';
 
 const options: Option[] = [
   {
@@ -26,6 +27,7 @@ const options: Option[] = [
 ];
 
 const showPrompt = ref(true);
+const showInfo = ref(false);
 const showControls = ref(true);
 const selectedIndex = ref(ScopeShape.Equilateral);
 const scopeAutoRotationVelocity = ref(0);
@@ -39,6 +41,7 @@ function updateScopeAutoRotationVelocity(value: number) {
 
 function dismissPrompt() {
   showPrompt.value = false;
+  showInfo.value = false;
 }
 
 window.addEventListener('keypress', (keyEvent) => {
@@ -60,6 +63,16 @@ window.addEventListener('keypress', (keyEvent) => {
   showControls.value = !showControls.value;
 });
 
+const controlsBarRef = useTemplateRef('controls-bar');
+
+onUpdated(() => {
+  const controlsBar = controlsBarRef.value as HTMLDivElement | null;
+  if (controlsBar !== null) {
+    controlsBar.addEventListener('touchstart', (e) => { e.preventDefault(); });
+    controlsBar.addEventListener('touchmove', (e) => { e.preventDefault(); });
+  }
+});
+
 </script>
 
 <template>
@@ -69,7 +82,7 @@ window.addEventListener('keypress', (keyEvent) => {
     :scope-auto-rotation-velocity="scopeAutoRotationVelocity"
   />
   <div
-    v-if="!showPrompt && showControls"
+    v-if="!showPrompt && !showInfo && showControls"
     class="absolute w-full flex flex-col justify-end gap-1 px-2 py-1 items-center pointer-events-none"
     style="bottom:calc(env(safe-area-inset-bottom))"
   >
@@ -78,6 +91,7 @@ window.addEventListener('keypress', (keyEvent) => {
       @update:velocity="updateScopeAutoRotationVelocity"
     />
     <div
+      ref="controls-bar"
       class="
       pointer-events-none
       w-full max-w-64 flex flex-row gap-1
@@ -103,19 +117,31 @@ window.addEventListener('keypress', (keyEvent) => {
         @update:selected-index="updateSelectedIndex"
       />
       <div
-          class="bg-white/40 rounded-full w-0.5 h-6"
+        class="bg-white/30 rounded-full w-0.5 h-6"
       ></div>
       <div
-        class="flex"
+        class="flex pointer-events-auto"
       >
-        <button
-            class="w-9 flex justify-center items-center cursor-pointer dark:opacity-60"
-        ><img src="/public/circle.svg"></button>
-        <button
-            class="w-9 flex justify-center items-center cursor-pointer dark:opacity-60"
-        ><img src="/public/circle.svg"></button>
+        <IconButton
+          image-url="/capture.svg"
+          label="Capture"
+        />
+        <IconButton
+          image-url="/info.svg"
+          label="Info"
+          @press="showInfo = true"
+        />
       </div>
     </div>
+  </div>
+  <div
+    v-if="showInfo"
+    class="absolute left-0 top-0 h-screen w-screen grid grid-cols-1 grid-rows-1 p-2 overflow-auto"
+    style="width:100dvw;height:100dvh;background-size: cover;"
+  >
+    <Prompt
+      @click:enter="dismissPrompt"
+    />
   </div>
   <div
     v-if="showPrompt"
