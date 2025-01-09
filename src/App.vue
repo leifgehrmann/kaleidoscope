@@ -147,6 +147,7 @@ onUpdated(() => {
     style="width:100dvw;height:100dvh;background-size: cover;"
   >
     <Prompt
+      :is-resume-prompt="true"
       @click:enter="dismissPrompt"
     />
   </div>

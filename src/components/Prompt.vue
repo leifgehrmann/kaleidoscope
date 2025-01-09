@@ -2,6 +2,10 @@
 
 import {ref} from 'vue';
 
+const { isResumePrompt = false } = defineProps<{
+  isResumePrompt?: boolean
+}>();
+
 const emit = defineEmits(['click:enter']);
 const showInformation = ref(false);
 
@@ -129,7 +133,8 @@ const showInformation = ref(false);
       class="bg-blue-600 active:bg-blue-500 dark:bg-blue-500 dark:active:bg-blue-400 font-bold text-white rounded-lg px-4 py-2 cursor-pointer w-full max-w-52"
       @click="emit('click:enter')"
     >
-      Play
+      <span v-if="isResumePrompt">Resume</span>
+      <span v-else>Play</span>
     </button>
   </div>
 </template>
