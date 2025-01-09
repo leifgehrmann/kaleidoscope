@@ -57,7 +57,7 @@ onMounted(() => {
     ref="button"
     class="
       pointer-events-auto
-      w-9 h-8 rounded-lg
+      h-full rounded-lg
       flex justify-center items-center
       cursor-pointer
     "
@@ -66,7 +66,7 @@ onMounted(() => {
   >
     <img
       class="
-        p-1.5 h-full
+        h-full
         pointer-events-none
         transition-opacity ease-out duration-300
       "

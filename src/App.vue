@@ -94,7 +94,7 @@ onUpdated(() => {
       ref="controls-bar"
       class="
       pointer-events-none
-      w-full max-w-64 flex flex-row gap-1
+      w-full max-w-72 sm:max-w-64 flex flex-row
       items-center
       p-1
       relative
@@ -108,26 +108,33 @@ onUpdated(() => {
       rounded-xl
       text-sm
       overflow-hidden
+      justify-between
       "
     >
       <SegmentedControl
-        class="w-full pointer-events-auto"
+        class="w-full pointer-events-auto basis-4/6"
         :options="options"
         :selected-index="selectedIndex"
         @update:selected-index="updateSelectedIndex"
       />
       <div
-        class="bg-white/30 rounded-full w-0.5 h-6"
-      ></div>
+        class="flex justify-center basis-[calc(100%_*_1_/_24)]"
+      >
+        <div
+          class="bg-white/30 rounded-full w-0.5 h-6"
+        ></div>
+      </div>
       <div
-        class="flex pointer-events-auto"
+        class="flex justify-between pointer-events-auto basis-[calc(100%_*_8_/_24)] gap-1"
       >
         <IconButton
           image-url="/capture.svg"
           label="Capture"
+          class="w-full"
         />
         <IconButton
           image-url="/info.svg"
+          class="w-full"
           label="Info"
           @press="showInfo = true"
         />
