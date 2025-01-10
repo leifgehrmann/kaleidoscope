@@ -13,39 +13,52 @@ const buttonRef = useTemplateRef('button');
 
 onMounted(() => {
   const button = buttonRef.value as HTMLButtonElement;
-  let originatedFromPointerdown = false;
-  button.addEventListener('pointerdown', () => {
+  // Mouse events
+  let isMouseDown = false;
+  button.addEventListener('mousedown', () => {
+    isMouseDown = true;
     pressActive.value = true;
   });
-  button.addEventListener('pointerenter', () => {
-    if (originatedFromPointerdown) {
+  button.addEventListener('mouseleave', () => {
+    pressActive.value = false;
+  });
+  window.addEventListener('mouseup', () => {
+    isMouseDown = false;
+    pressActive.value = false;
+  });
+  button.addEventListener('mouseenter', (e) => {
+    if (isMouseDown) {
       pressActive.value = true;
     }
-    originatedFromPointerdown = false;
   });
-  button.addEventListener('pointerleave', () => {
-    if (pressActive.value) {
-      originatedFromPointerdown = true;
-    }
-    pressActive.value = false;
+
+  // Touch events
+  button.addEventListener('touchstart', () => {
+    pressActive.value = true;
   });
-  button.addEventListener('pointerout', () => {
-    if (pressActive.value) {
-      originatedFromPointerdown = true;
-    }
-    pressActive.value = false;
+  button.addEventListener('touchmove', (e) => {
+    const element = document.elementFromPoint(
+        e.changedTouches[0].clientX,
+        e.changedTouches[0].clientY,
+    );
+    pressActive.value = element === button;
   });
-  button.addEventListener('pointerup', () => {
-    if (pressActive.value) {
+  button.addEventListener('touchend', (e) => {
+    const element = document.elementFromPoint(
+        e.changedTouches[0].clientX,
+        e.changedTouches[0].clientY,
+    );
+    if (element === button) {
       emit('press');
     }
   });
+  // Accessibility events
   button.addEventListener('click', () => {
+    isMouseDown = false;
     emit('press');
   });
   function reset() {
     pressActive.value = false;
-    originatedFromPointerdown = false;
   }
   window.addEventListener('pointerup', reset);
   button.addEventListener('pointercancel', reset);
@@ -57,7 +70,7 @@ onMounted(() => {
     ref="button"
     class="
       pointer-events-auto
-      h-full rounded-lg
+      h-full py-2 rounded-lg
       flex justify-center items-center
       cursor-pointer
     "
@@ -72,7 +85,7 @@ onMounted(() => {
       "
       :class="{
         'opacity-100 dark:opacity-70': !pressActive,
-        'opacity-80 dark:opacity-60': pressActive
+        'opacity-80 dark:opacity-50': pressActive
       }"
       aria-hidden="true"
       :src="imageUrl"
