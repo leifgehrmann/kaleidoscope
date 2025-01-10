@@ -5,7 +5,10 @@ import { ScopeShape } from '../scopeShape.ts';
 const props = defineProps<{
   scopeShape: ScopeShape,
   scopeAutoRotationVelocity: number
+  saveNextFrame: boolean
 }>();
+
+const emit = defineEmits(['save-frame']);
 
 const facingMode = ref('unknown');
 const cameraZoom = ref(1);
@@ -28,10 +31,7 @@ const keyPressedK = ref(false);
 const keyPressedL = ref(false);
 const keyPressedMinus = ref(false);
 const keyPressedPlus = ref(false);
-const saveNextFrame = ref(false);
 const canvas = useTemplateRef('canvas');
-const saveButton = useTemplateRef('saveButton');
-const saveButtonVisible = ref(false);
 
 async function main() {
   // Capture webcam input using invisible `video` element
@@ -482,14 +482,11 @@ async function main() {
     gl.uniform2f(canvasDimensionsBind, canvasSize, canvasSize);
     gl.drawArrays(gl.TRIANGLES, 0, 6);
 
-    if (saveNextFrame.value) {
-      const image = canvas
-          .toDataURL('image/jpeg', 1.0);
-      const a = document.createElement('a');
-      a.href = image;
-      a.download = 'kaleidoscope.jpg';
-      a.click();
-      saveNextFrame.value = false;
+    if (props.saveNextFrame) {
+      emit(
+        'save-frame',
+        canvas.toDataURL('image/jpeg', 0.8)
+      );
     }
 
     requestAnimationFrame(animate);
@@ -703,85 +700,6 @@ onMounted(() => {
       keyPressedAlt.value = false;
     }
   });
-
-  function displayContextMenu (at: Point, touchscreen: boolean) {
-    const saveButtonElement = saveButton.value as HTMLButtonElement;
-    if (!touchscreen) {
-      saveButtonElement.style.left = 'calc(min(100dvw - 7.5rem,' + at.clientX + 'px + 3px))';
-      saveButtonElement.style.top = 'calc(min(100dvh - 7rem,' + at.clientY + 'px - 3px))';
-    } else {
-      saveButtonElement.style.left = 'calc(max(0rem, min(100dvw - 7.5rem,' + at.clientX + 'px - 7.5rem / 2.0)))';
-      saveButtonElement.style.top = 'calc(max(0rem, min(100dvh - 7rem,' + at.clientY + 'px - 6rem)))';
-    }
-    saveButtonVisible.value = true;
-  }
-
-  const touchContextMenuDuration = 1000;
-  let touchContextMenuId = null as null | number;
-  let touchContextMenuPrev = null as null | Point;
-  let touchContextMenuDistance = 0;
-  let touchContextMenuTimeout = null as null | number;
-  canvasElement.addEventListener('touchstart', (touchEvent) => {
-    saveButtonVisible.value = false;
-    const touch = touchEvent.changedTouches[0];
-    touchContextMenuId = touch.identifier;
-    touchContextMenuDistance = 0;
-    const originalTouchContextMenuId = touchContextMenuId;
-    touchContextMenuPrev = touch;
-
-    touchContextMenuTimeout = setTimeout(() => {
-      console.log(touchContextMenuId, originalTouchContextMenuId);
-      console.log(touchContextMenuDistance);
-      if (touchContextMenuId !== originalTouchContextMenuId) {
-        return;
-      }
-      if (touchContextMenuDistance > 2) {
-        return;
-      }
-      displayContextMenu(touch, true);
-    }, touchContextMenuDuration);
-  });
-  document.addEventListener('touchmove', (touchEvent) => {
-    if (touchContextMenuId === null || touchContextMenuPrev == null) {
-      return;
-    }
-    const touch = getTouchById(touchEvent.changedTouches, touchContextMenuId);
-    if (touch === null) {
-      return;
-    }
-    const dx = touch.clientX - touchContextMenuPrev.clientX;
-    const dy = touch.clientY - touchContextMenuPrev.clientY;
-    const movedDistance = Math.sqrt(dx*dx + dy*dy);
-    touchContextMenuDistance += movedDistance;
-    touchContextMenuPrev = touch;
-  });
-  document.addEventListener('touchend', (touchEvent) => {
-    if (touchContextMenuId === null) {
-      return;
-    }
-    const touch = getTouchById(touchEvent.changedTouches, touchContextMenuId);
-    if (touch === null) {
-      return;
-    }
-    touchContextMenuId = null;
-    touchContextMenuPrev = null;
-    touchContextMenuDistance = 0;
-    if (touchContextMenuTimeout !== null) {
-      clearTimeout(touchContextMenuTimeout);
-    }
-  });
-
-
-  canvasElement.addEventListener('contextmenu', function(e) {
-    displayContextMenu(e, false);
-    e.preventDefault();
-  });
-  document.addEventListener('mousedown', () => {
-    saveButtonVisible.value = false;
-  });
-  window.addEventListener('resize', () => {
-    saveButtonVisible.value = false;
-  });
 });
 
 </script>
@@ -793,60 +711,6 @@ onMounted(() => {
     class="bg-black"
     style="width:100dvw;height:100dvh;object-fit:cover"
   />
-  <div
-    class="pointer-events-none absolute left-0 top-0 p-5 pb-24 overflow-hidden"
-    style="width:100dvw;height:100dvh"
-  >
-    <div>
-      <button
-        ref="saveButton"
-        class="
-          absolute
-          flex-nowrap
-          whitespace-nowrap
-          text-nowrap
-          flex
-          flex-row
-          items-center
-          gap-1
-          bg-neutral-200
-          bg-opacity-70
-          hover:bg-opacity-80
-          dark:bg-neutral-800
-          dark:bg-opacity-70
-          shadow-xl
-          dark:shadow-none
-          backdrop-blur-xl
-          rounded-md
-          p-1
-          px-2
-          pointer-events-auto
-          cursor-pointer
-          text-black
-          dark:text-white
-        "
-        :class="{
-          'hidden': !saveButtonVisible
-        }"
-        style="left: 100%;top:100%"
-        @click="saveNextFrame = true; saveButtonVisible = false"
-        @mousedown.stop
-      >
-        <picture>
-          <source
-            srcset="/download-dark.svg"
-            media="(prefers-color-scheme: dark)"
-          >
-          <img
-            src="/download-light.svg"
-            alt="Download icon"
-            class="h-4 min-w-4"
-          >
-        </picture>
-        Save image
-      </button>
-    </div>
-  </div>
   <video
     id="camera"
     visible="False"

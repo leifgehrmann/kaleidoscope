@@ -45,7 +45,8 @@ const selectedOptionTransformationOrigin = computed(() => {
 function buttonsResizeCallback(entries: ResizeObserverEntry[]) {
   entries.forEach((entry) => {
     if (hockeyPuck.value === null) {
-      throw new Error('Invalid state: hockeyPuck does not exist');
+      // hockeyPuck does not exist, probably because it was unmounted
+      return;
     }
     hockeyPuck.value.style.height = `${entry.contentRect.height}px`;
   });
@@ -195,111 +196,94 @@ onMounted(() => {
 <template>
   <div>
     <div
-      class="
-        p-1
-        relative
-        bg-neutral-300
-        bg-opacity-50
-        dark:bg-neutral-800
-        dark:bg-opacity-70
-        shadow-lg
-        dark:shadow-none
-        backdrop-blur-xl
-        rounded-xl
-        text-sm
-        overflow-hidden
-      "
+      class="relative"
     >
       <div
-        class="relative"
+        class="
+          transform
+          transition-transform ease-out duration-300
+        "
+        :style="{
+          '--tw-translate-x': selectedOptionPositionLeft,
+        }"
       >
         <div
+          ref="hockey-puck"
           class="
+            p-2
+            absolute
+            bg-black
+            bg-opacity-20
+            dark:bg-white
+            dark:bg-opacity-20
+            rounded-lg
+            dark:shadow-lg
             transform
             transition-transform ease-out duration-300
           "
+          :class="{ 'scale-95': pressActive && mountedSelectedIndex === pressActiveIndex }"
           :style="{
-            '--tw-translate-x': selectedOptionPositionLeft,
+            width: optionWidth,
+            'transform-origin': `${selectedOptionTransformationOrigin} center`,
           }"
-        >
-          <div
-            ref="hockey-puck"
-            class="
-              p-2
-              absolute
-              bg-black
-              bg-opacity-20
-              dark:bg-white
-              dark:bg-opacity-20
-              rounded-lg
-              dark:shadow-lg
-              transform
-              transition-transform ease-out duration-300
-            "
-            :class="{ 'scale-95': pressActive && mountedSelectedIndex === pressActiveIndex }"
-            :style="{
-              width: optionWidth,
-              'transform-origin': `${selectedOptionTransformationOrigin} center`,
-            }"
-          />
-        </div>
+        />
       </div>
-      <div
-        ref="buttons"
-        class="w-full relative flex"
+    </div>
+    <div
+      ref="buttons"
+      class="w-full relative flex"
+    >
+      <template
+        v-for="(item, index) in options"
+        :key="index"
       >
-        <template
-          v-for="(item, index) in options"
-          :key="index"
+        <div
+          v-if="index > 0"
+          class="select-none py-2"
+          :style="{ width: gapWidth }"
+        />
+        <button
+          v-if="item !== null"
+          :aria-label="item.buttonAriaLabel"
+          :title="item.buttonAriaLabel"
+          type="button"
+          class="
+            py-2 rounded-lg
+            overflow-hidden overflow-ellipsis
+            transform transition ease-out duration-300
+          "
+          :class="{
+            'scale-95': (
+              index === pressActiveIndex && pressActive && index === mountedSelectedIndex
+            ),
+          }"
+          :style="{ width: optionWidth }"
+          @click="selectButtonCallback"
+          @keydown.left="selectButtonToTheLeft"
+          @keydown.right="selectButtonToTheRight"
         >
-          <div
-            v-if="index > 0"
-            class="select-none py-2"
-            :style="{ width: gapWidth }"
-          />
-          <button
-            v-if="item !== null"
-            :aria-label="item.buttonAriaLabel"
-            :title="item.buttonAriaLabel"
-            type="button"
-            class="
-              py-2 rounded-lg
-              overflow-hidden overflow-ellipsis
-              transform transition ease-out duration-300
-            "
+          <span
+            class="transition transform flex ease-out duration-300 pointer-events-none justify-center items-center"
             :class="{
-              'scale-95': (
-                index === pressActiveIndex && pressActive && index === mountedSelectedIndex
+              'opacity-100 scale-95': index === mountedSelectedIndex,
+              'dark:opacity-70': (
+                index !== mountedSelectedIndex && (!pressActive || index !== pressActiveIndex)
+              ),
+              'opacity-80 dark:opacity-50': (
+                index === pressActiveIndex && index !== mountedSelectedIndex && pressActive
               ),
             }"
-            :style="{ width: optionWidth }"
-            @click="selectButtonCallback"
-            @keydown.left="selectButtonToTheLeft"
-            @keydown.right="selectButtonToTheRight"
+            :style="{
+              'transform-origin': `${selectedOptionTransformationOrigin} center`,
+            }"
           >
-            <span
-              class="transition transform flex ease-out duration-300 pointer-events-none justify-center items-center"
-              :class="{
-                'opacity-100 scale-95': index === mountedSelectedIndex,
-                'dark:opacity-70': (
-                  index !== mountedSelectedIndex && (!pressActive || index !== pressActiveIndex)
-                ),
-                'dark:opacity-50': (
-                  index === pressActiveIndex && index !== mountedSelectedIndex && pressActive
-                ),
-              }"
-              :style="{
-                'transform-origin': `${selectedOptionTransformationOrigin} center`,
-              }"
+            <img
+              :src="item.imageUrl"
+              :alt="item.buttonAriaLabel"
             >
-              <img
-                :src="item.imageUrl"
-                :alt="item.buttonAriaLabel"
-              >
-            </span>
-          </button>
-        </template>
-      </div>
+          </span>
+        </button>
+      </template>
     </div>
   </div>
 </template>
