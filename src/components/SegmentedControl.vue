@@ -269,7 +269,7 @@ onMounted(() => {
               'dark:opacity-70': (
                 index !== mountedSelectedIndex && (!pressActive || index !== pressActiveIndex)
               ),
-              'dark:opacity-50': (
+              'opacity-80 dark:opacity-50': (
                 index === pressActiveIndex && index !== mountedSelectedIndex && pressActive
               ),
             }"
