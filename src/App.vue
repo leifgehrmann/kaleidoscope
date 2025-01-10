@@ -134,7 +134,7 @@ onUpdated(() => {
       >
         <div
           class="bg-white/30 rounded-full w-0.5 h-6"
-        ></div>
+        />
       </div>
       <div
         class="flex justify-between pointer-events-auto basis-[calc(100%_*_8_/_24)] gap-1"

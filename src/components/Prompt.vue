@@ -126,7 +126,7 @@ const showInformation = ref(false);
       This website does not collect any data.<br>Additional information can be found on
       <a
         href="https://github.com/leifgehrmann/kaleidoscope"
-        class="text-blue-600/80 dark:text-blue-300/80 select-text"
+        class="select-text"
       >GitHub</a>.
     </p>
     <button
