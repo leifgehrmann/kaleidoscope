@@ -8,9 +8,9 @@ You can find a demo at [kaleidoscope.leifgehrmann.com](https://kaleidoscope.leif
 
 * 🔍 Zoom by dragging up and down (or scrolling) on the screen.
 * 🔄 Rotate by dragging left and right (or horizontal scrolling) on the screen.
-* 🔼 Switch between the four kaleidoscope shapes using the menu at the bottom.
+* 🔼 Switch between the four kaleidoscope shapes using the controls at the bottom of the screen.
 * 🎠 Auto-rotate using the "steering widget" by dragging it left and right to control the speed.
-* 💾 Save the image by right-clicking or long-pressing the screen.
+* 📸 Take a picture by pressing the camera icon.
 
 ### Keyboard controls
 
