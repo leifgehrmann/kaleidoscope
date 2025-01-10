@@ -26,7 +26,7 @@ onMounted(() => {
     isMouseDown = false;
     pressActive.value = false;
   });
-  button.addEventListener('mouseenter', (e) => {
+  button.addEventListener('mouseenter', () => {
     if (isMouseDown) {
       pressActive.value = true;
     }
