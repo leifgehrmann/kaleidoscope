@@ -6,6 +6,7 @@ import SteeringControl from './components/SteeringControl.vue';
 import { ScopeShape } from './scopeShape.ts';
 import Prompt from './components/Prompt.vue';
 import IconButton from './components/IconButton.vue';
+import CaptureModal from './components/CaptureModal.vue';
 
 const options: Option[] = [
   {
@@ -28,6 +29,9 @@ const options: Option[] = [
 
 const showPrompt = ref(true);
 const showInfo = ref(false);
+const saveNextFrame = ref(false);
+const capturedFrame = ref(null as null|string);
+const showCapture = ref(false);
 const showControls = ref(true);
 const selectedIndex = ref(ScopeShape.Equilateral);
 const scopeAutoRotationVelocity = ref(0);
@@ -42,6 +46,12 @@ function updateScopeAutoRotationVelocity(value: number) {
 function dismissPrompt() {
   showPrompt.value = false;
   showInfo.value = false;
+}
+
+function savedFrame(objectUrl: string) {
+  saveNextFrame.value = false;
+  showCapture.value = true;
+  capturedFrame.value = objectUrl;
 }
 
 window.addEventListener('keypress', (keyEvent) => {
@@ -80,9 +90,11 @@ onUpdated(() => {
     v-if="!showPrompt"
     :scope-shape="selectedIndex"
     :scope-auto-rotation-velocity="scopeAutoRotationVelocity"
+    :save-next-frame="saveNextFrame"
+    @save-frame="savedFrame"
   />
   <div
-    v-if="!showPrompt && !showInfo && showControls"
+    v-if="!showPrompt && !showInfo && !showCapture && showControls"
     class="absolute w-full flex flex-col justify-end gap-1 px-2 py-1 items-center pointer-events-none"
     style="bottom:calc(env(safe-area-inset-bottom))"
   >
@@ -131,6 +143,7 @@ onUpdated(() => {
           image-url="/capture.svg"
           label="Capture"
           class="w-full"
+          @press="saveNextFrame = true"
         />
         <IconButton
           image-url="/info.svg"
@@ -142,8 +155,19 @@ onUpdated(() => {
     </div>
   </div>
   <div
+    v-if="showCapture && capturedFrame !== null"
+    class="absolute left-0 top-0 h-screen w-screen grid grid-cols-1 grid-rows-1 p-2 pb-4 overflow-auto bg-black/20 backdrop-blur-xl"
+    style="width:100dvw;height:100dvh;background-size: cover;"
+    @click="showCapture = false"
+  >
+    <CaptureModal
+      :url="capturedFrame"
+      @done="showCapture = false"
+    />
+  </div>
+  <div
     v-if="showInfo"
-    class="absolute left-0 top-0 h-screen w-screen grid grid-cols-1 grid-rows-1 p-2 overflow-auto"
+    class="absolute left-0 top-0 h-screen w-screen grid grid-cols-1 grid-rows-1 p-2 overflow-auto bg-black/20 backdrop-blur-xl"
     style="width:100dvw;height:100dvh;background-size: cover;"
   >
     <Prompt
