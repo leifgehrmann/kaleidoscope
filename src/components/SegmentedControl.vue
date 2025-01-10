@@ -45,7 +45,8 @@ const selectedOptionTransformationOrigin = computed(() => {
 function buttonsResizeCallback(entries: ResizeObserverEntry[]) {
   entries.forEach((entry) => {
     if (hockeyPuck.value === null) {
-      throw new Error('Invalid state: hockeyPuck does not exist');
+      // hockeyPuck does not exist, probably because it was unmounted
+      return;
     }
     hockeyPuck.value.style.height = `${entry.contentRect.height}px`;
   });
