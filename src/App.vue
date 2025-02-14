@@ -110,10 +110,8 @@ onUpdated(() => {
       items-center
       p-1
       relative
-      bg-neutral-300
-      bg-opacity-50
-      dark:bg-neutral-800
-      dark:bg-opacity-70
+      bg-neutral-300/50
+      dark:bg-neutral-800/70
       shadow-lg
       dark:shadow-none
       backdrop-blur-xl

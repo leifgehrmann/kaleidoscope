@@ -1,6 +1,8 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "ui-rounded", "Helvetica", "sans-serif";
+}
 
 body * {
   -webkit-touch-callout: none;

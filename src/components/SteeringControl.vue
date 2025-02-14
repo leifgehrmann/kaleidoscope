@@ -288,10 +288,8 @@ onMounted(() => {
       class="
         h-full
         w-full
-        bg-neutral-300
-        dark:bg-neutral-800
-        bg-opacity-50
-        dark:bg-opacity-70
+        bg-neutral-300/50
+        dark:bg-neutral-800/70
         backdrop-blur-xl
         overflow-hidden
         shadow-md

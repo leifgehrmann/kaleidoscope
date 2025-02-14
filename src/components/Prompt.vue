@@ -20,9 +20,7 @@ const showInformation = ref(false);
       items-center
       gap-6
       bg-white
-      dark:bg-neutral-800
-      bg-opacity-100
-      dark:bg-opacity-90
+      dark:bg-neutral-800/90
       backdrop-blur-xl
       rounded-3xl
       p-4
@@ -82,7 +80,7 @@ const showInformation = ref(false);
         <p>
           Switch mirror arrangements to create different patterns.<br>
           <button
-            class="inline-block text-blue-600 dark:text-blue-300 select-text"
+            class="inline-block text-blue-600 dark:text-blue-300 select-text cursor-pointer"
             @click="showInformation = !showInformation"
           >
             <span v-if="!showInformation">Learn more…</span>
@@ -140,6 +138,8 @@ const showInformation = ref(false);
 </template>
 
 <style scoped>
+@reference "../style.css";
+
 p {
   @apply select-text;
 }

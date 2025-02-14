@@ -16,8 +16,7 @@ const emit = defineEmits(['done']);
       flex-col
       items-center
       gap-4
-      bg-white dark:bg-neutral-800
-      bg-opacity-100 dark:bg-opacity-70
+      bg-white dark:bg-neutral-800/70
       backdrop-blur-xl
       rounded-3xl
       p-4
